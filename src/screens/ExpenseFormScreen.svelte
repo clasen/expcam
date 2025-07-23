@@ -6,6 +6,7 @@
   
   $: formData = $editingExpense || extractedData;
   
+  
   function goBack() {
     editingExpense.set(null);
     currentScreen.set('main');

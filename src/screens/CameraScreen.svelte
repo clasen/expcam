@@ -4,6 +4,9 @@
     expenses,
     loadingStates,
     currentScreen,
+    currentTab,
+    appSettings,
+    notification,
   } from "../stores/appStore.js";
   import {
     processReceiptImage,
@@ -34,17 +37,40 @@
       initializeCamera();
     };
 
+    // Listen for files selected from bottom navigation (simple mode)
+    const handleFilesSelected = async (event) => {
+      console.log('Files selected event received:', event.detail);
+      const files = event.detail;
+      if (files && files.length > 0) {
+        if (files.length === 1) {
+          console.log('Processing single image:', files[0].name);
+          await processImage(files[0]);
+        } else {
+          console.log('Processing batch images:', files.length);
+          await processBatchFiles(files);
+        }
+      }
+    };
+
     window.addEventListener("closeCamera", handleCloseCamera);
     window.addEventListener("initializeCamera", handleInitializeCamera);
+    window.addEventListener("filesSelected", handleFilesSelected);
 
     return () => {
       stopCamera();
       window.removeEventListener("closeCamera", handleCloseCamera);
       window.removeEventListener("initializeCamera", handleInitializeCamera);
+      window.removeEventListener("filesSelected", handleFilesSelected);
     };
   });
 
   function initializeCamera() {
+    // If simple camera mode is enabled, directly open file picker
+    if ($appSettings.simpleCameraMode) {
+      fileInput?.click();
+      return;
+    }
+    
     showCamera = true;
     // Wait for DOM to update, then start camera
     setTimeout(startCamera, 100);
@@ -146,10 +172,19 @@
   }
 
   async function processImage(file) {
+    console.log('Starting image processing for:', file.name);
     loadingStates.update((state) => ({ ...state, ocr: true }));
 
     try {
-      const result = await sx.send("process_receipt", file);
+      // Try server first, fall back to simulator
+      let result;
+      try {
+        result = await sx.send("process_receipt", file);
+        console.log('Server result:', result);
+      } catch (serverError) {
+        console.warn('Server processing failed, using simulator:', serverError);
+        result = await processReceiptImage(file);
+      }
       
       if (result.success) {
         // Store extracted data globally and navigate to expense form
@@ -168,11 +203,54 @@
   }
 
   async function processBatchFiles(files) {
+    console.log('Starting batch processing for:', files.length, 'files');
     loadingStates.update((state) => ({ ...state, ocr: true }));
 
     try {
-      const results = await processBatchImages(files);
+      const results = [];
+      
+      // Process each file individually
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        console.log(`Processing file ${i + 1}/${files.length}:`, file.name);
+        
+        try {
+          // Try server first, fall back to simulator
+          let result;
+          try {
+            result = await sx.send("process_receipt", file);
+            console.log('Server result for', file.name, ':', result);
+          } catch (serverError) {
+            console.warn('Server processing failed for', file.name, ', using simulator:', serverError);
+            result = await processReceiptImage(file);
+          }
+          
+          if (result.success) {
+            results.push({
+              fileName: file.name,
+              success: true,
+              data: result.data,
+              confidence: result.confidence
+            });
+          } else {
+            results.push({
+              fileName: file.name,
+              success: false,
+              error: result.error || 'Processing failed'
+            });
+          }
+        } catch (error) {
+          console.error('Error processing', file.name, ':', error);
+          results.push({
+            fileName: file.name,
+            success: false,
+            error: error.message
+          });
+        }
+      }
+
       const successfulResults = results.filter((r) => r.success);
+      console.log('Batch processing completed:', successfulResults.length, 'successful,', results.length - successfulResults.length, 'failed');
 
       if (successfulResults.length > 0) {
         // Add all successful extractions as expenses
@@ -184,9 +262,16 @@
 
         expenses.update((list) => [...list, ...newExpenses]);
 
-        alert(
-          `Successfully processed ${successfulResults.length} of ${files.length} receipts.`,
-        );
+        // Show success notification
+        notification.set({
+          type: 'success',
+          message: `Successfully processed ${successfulResults.length} of ${files.length} receipts`,
+          duration: 4000
+        });
+
+        // Navigate to expenses screen to see the results
+        currentScreen.set('main');
+        currentTab.set('expenses');
       } else {
         alert("Failed to process any receipts. Please try again.");
       }
@@ -269,7 +354,9 @@
         <div class="text-center">
           <i class="fas fa-camera text-6xl text-dark-600 mb-4"></i>
           <h2 class="text-2xl font-bold text-white mb-2">Capture Receipts</h2>
-          <p class="text-dark-300">Take photos or upload existing images</p>
+          <p class="text-dark-300">
+            {$appSettings.simpleCameraMode ? 'Select images from your device' : 'Take photos or upload existing images'}
+          </p>
         </div>
 
         <div class="w-full max-w-sm space-y-4">
@@ -278,16 +365,18 @@
             on:click={initializeCamera}
           >
             <i class="fas fa-camera mr-3"></i>
-            Take Photo
+            {$appSettings.simpleCameraMode ? 'Select Image' : 'Take Photo'}
           </button>
 
-          <button
-            class="btn-secondary w-full py-4 text-lg"
-            on:click={() => fileInput.click()}
-          >
-            <i class="fas fa-upload mr-3"></i>
-            Upload Image
-          </button>
+          {#if !$appSettings.simpleCameraMode}
+            <button
+              class="btn-secondary w-full py-4 text-lg"
+              on:click={() => fileInput.click()}
+            >
+              <i class="fas fa-upload mr-3"></i>
+              Upload Image
+            </button>
+          {/if}
 
           <input
             bind:this={fileInput}

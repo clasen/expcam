@@ -8,9 +8,12 @@
   
   const dispatch = createEventDispatcher();
   
+  let showImageModal = false;
+  
   $: isEditing = $editingExpense !== null;
   
-  let formData = {
+  // Make formData reactive to data changes
+  $: formData = {
     merchant: data?.merchant || '',
     amount: data?.amount || '',
     currency: data?.currency || 'USD',
@@ -20,8 +23,10 @@
     location: data?.location || '',
     receiptNumber: data?.receiptNumber || '',
     paymentMethod: data?.paymentMethod || 'Credit Card',
-    taxAmount: data?.taxAmount || ''
+    taxAmount: data?.taxAmount || '',
+    imageUrl: data?.imageUrl || null
   };
+  
   
   let errors = {};
   
@@ -44,6 +49,7 @@
           ...formData,
           amount: parseFloat(formData.amount),
           taxAmount: formData.taxAmount ? parseFloat(formData.taxAmount) : 0,
+          imageUrl: formData.imageUrl, // Preserve image URL
           updatedAt: new Date().toISOString()
         };
         
@@ -57,6 +63,7 @@
           ...formData,
           amount: parseFloat(formData.amount),
           taxAmount: formData.taxAmount ? parseFloat(formData.taxAmount) : 0,
+          imageUrl: formData.imageUrl, // Preserve image URL
           createdAt: new Date().toISOString()
         };
         
@@ -69,9 +76,47 @@
   function handleCancel() {
     dispatch('cancel');
   }
+  
+  function openImageModal() {
+    showImageModal = true;
+  }
+  
+  function closeImageModal() {
+    showImageModal = false;
+  }
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="space-y-6">
+  <!-- Receipt Image Thumbnail -->
+  {#if formData.imageUrl}
+    <div class="bg-dark-800 rounded-lg p-3">
+      <div class="flex items-center space-x-3">
+        <div class="flex-shrink-0">
+          <img 
+            src={formData.imageUrl} 
+            alt="Receipt thumbnail" 
+            class="w-12 h-12 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity border border-dark-600"
+            on:click={openImageModal}
+          />
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="text-sm font-medium text-dark-200 flex items-center">
+            <i class="fas fa-image mr-2 text-primary-500"></i>
+            Receipt Image
+          </h3>
+          <button
+            type="button"
+            class="text-xs text-dark-400 hover:text-primary-500 transition-colors mt-1"
+            on:click={openImageModal}
+          >
+            <i class="fas fa-search-plus mr-1"></i>
+            Click to view
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
+
   <div class="space-y-4">
     <!-- Merchant -->
     <div>
@@ -235,3 +280,42 @@
     </button>
   </div>
 </form>
+
+<!-- Image Modal -->
+{#if showImageModal && formData.imageUrl}
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+    on:click={closeImageModal}
+  >
+    <div class="relative max-w-4xl max-h-full">
+      <!-- Close button -->
+      <button
+        class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors text-xl"
+        on:click={closeImageModal}
+        aria-label="Close modal"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+      
+      <!-- Image -->
+      <img 
+        src={formData.imageUrl} 
+        alt="Receipt full size" 
+        class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+        on:click|stopPropagation
+      />
+      
+      <!-- Download/Open button -->
+      <div class="absolute -bottom-12 left-0 right-0 flex justify-center space-x-4">
+        <button
+          type="button"
+          class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
+          on:click={() => window.open(formData.imageUrl, '_blank')}
+        >
+          <i class="fas fa-external-link-alt mr-2"></i>
+          Open in new tab
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}

@@ -67,7 +67,8 @@ function generateMockReceiptData() {
     taxAmount: (amount * 0.1).toFixed(2),
     paymentMethod: 'Credit Card',
     receiptNumber: `RCP-${Math.floor(Math.random() * 999999)}`,
-    location: getRandomLocation()
+    location: getRandomLocation(),
+    imageUrl: null // Simulator doesn't save images
   };
 }
 

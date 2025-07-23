@@ -66,7 +66,8 @@ export const appSettings = writable({
   darkMode: true,
   currency: 'USD',
   autoSave: true,
-  notifications: true
+  notifications: true,
+  simpleCameraMode: false
 });
 
 // Loading States
@@ -75,3 +76,6 @@ export const loadingStates = writable({
   saving: false,
   exporting: false
 });
+
+// Notifications
+export const notification = writable(null);
