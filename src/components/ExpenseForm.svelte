@@ -20,9 +20,7 @@
     location: data?.location || '',
     receiptNumber: data?.receiptNumber || '',
     paymentMethod: data?.paymentMethod || 'Credit Card',
-    taxAmount: data?.taxAmount || '',
-    imageUrl: data?.imageUrl || null,
-    imagePath: data?.imagePath || null
+    taxAmount: data?.taxAmount || ''
   };
   
   let errors = {};

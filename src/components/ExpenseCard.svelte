@@ -28,17 +28,6 @@
 </script>
 
 <div class="card animate-fade-in">
-  {#if expense.imageUrl}
-    <div class="mb-3">
-      <img 
-        src={expense.imageUrl} 
-        alt="Receipt for {expense.merchant}"
-        class="w-full h-32 object-cover rounded-lg border border-dark-600"
-        loading="lazy"
-      >
-    </div>
-  {/if}
-  
   <div class="flex items-center justify-between">
     <div class="flex items-center space-x-3">
       <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
