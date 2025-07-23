@@ -1,0 +1,16 @@
+{
+  "name": "expcam-server",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "OCR processing server for expense camera app",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.0",
+    "modelmix": "^3.7.2",
+    "shotx": "^1.3.2"
+  }
+}
