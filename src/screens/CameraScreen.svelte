@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { expenses, loadingStates, currentScreen } from '../stores/appStore.js';
-  import { processReceiptImage, processBatchImages } from '../utils/ocrSimulator.js';
+  import { processReceiptImage, processBatchImages } from '../utils/ocrService.js';
   
   import LoadingSpinner from '../components/LoadingSpinner.svelte';
   
