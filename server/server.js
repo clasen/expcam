@@ -3,9 +3,12 @@ import SxServer from 'shotx/server';
 import { ModelMix } from 'modelmix';
 import 'dotenv/config';
 
-
 const server = createServer();
 const sxServer = new SxServer({ server });
+
+const categories = [
+    'lodging', 'transport', 'meals', 'miscellaneous', 'purchases', 'other'
+];
 
 // Set a simple authentication handler
 sxServer
@@ -18,7 +21,8 @@ sxServer
                 amount: 1005.1,
                 currency: 'USD',
                 date: '2025-07-23',
-                category: 'travel',
+                hour: '13:20',
+                category: 'transport',
                 description: `Delta Airlines flight from New York to Los Angeles`,
                 taxAmount: (1005.1 * 0.1).toFixed(2),
                 paymentMethod: 'Credit Card',
@@ -26,8 +30,9 @@ sxServer
                 location: 'New York, NY'
             },
             confidence: 90,
-        }, { addExample: true });
-        socket.send(result);
+        }, { data: { category: categories.join('|') } }, { addExample: true });
+
+        return result;
     })
 
 

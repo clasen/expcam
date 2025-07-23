@@ -168,20 +168,6 @@
         </div>
       </section>
       
-      <!-- App Info -->
-      <section class="card">
-        <h2 class="text-lg font-semibold text-white mb-4">
-          <i class="fas fa-info-circle mr-2 text-dark-400"></i>
-          About
-        </h2>
-        
-        <div class="space-y-2 text-sm text-dark-300">
-          <p><strong>Version:</strong> 1.0.0</p>
-          <p><strong>Build:</strong> Mobile PWA</p>
-          <p><strong>Framework:</strong> Svelte + Tailwind CSS</p>
-        </div>
-      </section>
-      
     </div>
   </main>
 </div>

@@ -231,7 +231,7 @@
       type="submit"
       class="btn-primary flex-1"
     >
-      {isEditing ? 'Update Expense' : 'Save Expense'}
+      {isEditing ? 'Update' : 'Save'}
     </button>
   </div>
 </form>
