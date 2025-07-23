@@ -230,10 +230,6 @@
           </div>
         {/if}
         
-        <!-- Camera Overlay -->
-        <div class="absolute inset-0 pointer-events-none">
-          <div class="w-full h-full border-2 border-dashed border-white opacity-30 m-8 rounded-lg"></div>
-        </div>
       </div>
       
       <canvas bind:this={canvasElement} class="hidden"></canvas>
