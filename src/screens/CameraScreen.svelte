@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { expenses, loadingStates, currentScreen } from '../stores/appStore.js';
   import { processReceiptImage, processBatchImages } from '../utils/ocrSimulator.js';
+  import { uploadImageToServer, compressImage } from '../utils/imageUpload.js';
   
   import LoadingSpinner from '../components/LoadingSpinner.svelte';
   
@@ -99,7 +100,7 @@
     
     canvasElement.toBlob(async (blob) => {
       const file = new File([blob], `receipt-${Date.now()}.jpg`, { type: 'image/jpeg' });
-      await processImage(file);
+      await processAndUploadImage(file);
     }, 'image/jpeg', 0.8);
   }
   
@@ -108,7 +109,7 @@
     if (files.length === 0) return;
     
     if (files.length === 1) {
-      await processImage(files[0]);
+      await processAndUploadImage(files[0]);
     } else {
       await processBatchFiles(files);
     }
@@ -119,21 +120,38 @@
     }
   }
   
-  async function processImage(file) {
+  async function processAndUploadImage(file) {
     loadingStates.update(state => ({ ...state, ocr: true }));
     
     try {
+      // Compress image before upload
+      const compressedFile = await compressImage(file);
+      
+      // Upload image to server
+      const uploadResult = await uploadImageToServer(compressedFile, file.name);
+      
+      if (!uploadResult.success) {
+        throw new Error(uploadResult.error || 'Failed to upload image');
+      }
+      
+      console.log('Image uploaded successfully:', uploadResult.data);
+      
+      // Process with OCR
       const result = await processReceiptImage(file);
       if (result.success) {
-        // Store extracted data globally and navigate to expense form
-        window.tempExtractedData = result.data;
+        // Store extracted data with image URL and navigate to expense form
+        window.tempExtractedData = {
+          ...result.data,
+          imageUrl: uploadResult.data.publicUrl,
+          imagePath: uploadResult.data.path
+        };
         currentScreen.set('expense-form');
       } else {
         alert('Failed to process receipt. Please try again.');
       }
     } catch (error) {
-      console.error('OCR processing error:', error);
-      alert('An error occurred while processing the receipt.');
+      console.error('Image processing error:', error);
+      alert(`An error occurred: ${error.message}`);
     } finally {
       loadingStates.update(state => ({ ...state, ocr: false }));
       stopCamera();
@@ -144,26 +162,37 @@
     loadingStates.update(state => ({ ...state, ocr: true }));
     
     try {
+      // Upload all images first
+      const uploadPromises = files.map(async (file) => {
+        const compressedFile = await compressImage(file);
+        return uploadImageToServer(compressedFile, file.name);
+      });
+      
+      const uploadResults = await Promise.all(uploadPromises);
+      
       const results = await processBatchImages(files);
       const successfulResults = results.filter(r => r.success);
       
       if (successfulResults.length > 0) {
         // Add all successful extractions as expenses
-        const newExpenses = successfulResults.map(result => ({
+        const newExpenses = successfulResults.map((result, index) => ({
           id: Date.now() + Math.random(),
           ...result.data,
+          imageUrl: uploadResults[index]?.success ? uploadResults[index].data.publicUrl : null,
+          imagePath: uploadResults[index]?.success ? uploadResults[index].data.path : null,
           createdAt: new Date().toISOString()
         }));
         
         expenses.update(list => [...list, ...newExpenses]);
         
-        alert(`Successfully processed ${successfulResults.length} of ${files.length} receipts.`);
+        const uploadedCount = uploadResults.filter(r => r.success).length;
+        alert(`Successfully processed ${successfulResults.length} of ${files.length} receipts. ${uploadedCount} images uploaded.`);
       } else {
         alert('Failed to process any receipts. Please try again.');
       }
     } catch (error) {
       console.error('Batch processing error:', error);
-      alert('An error occurred while processing the receipts.');
+      alert(`An error occurred: ${error.message}`);
     } finally {
       loadingStates.update(state => ({ ...state, ocr: false }));
     }
