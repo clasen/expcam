@@ -42,6 +42,11 @@
   
   function switchToCamera() {
     currentTab.set('camera');
+    // Trigger camera initialization after tab switch
+    setTimeout(() => {
+      const event = new CustomEvent('initializeCamera');
+      window.dispatchEvent(event);
+    }, 100);
   }
   
   function formatCurrency(amount, currency = 'USD') {

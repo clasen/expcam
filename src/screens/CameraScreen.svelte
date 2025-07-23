@@ -18,11 +18,18 @@
       stopCamera();
     };
     
+    // Listen for initialize camera event
+    const handleInitializeCamera = () => {
+      initializeCamera();
+    };
+    
     window.addEventListener('closeCamera', handleCloseCamera);
+    window.addEventListener('initializeCamera', handleInitializeCamera);
     
     return () => {
       stopCamera();
       window.removeEventListener('closeCamera', handleCloseCamera);
+      window.removeEventListener('initializeCamera', handleInitializeCamera);
     };
   });
   
