@@ -1,36 +1,16 @@
-// OCR service that communicates with Supabase Edge Function
+// Simulates OCR processing of receipt images
 export async function processReceiptImage(imageFile) {
-  try {
-    const formData = new FormData();
-    formData.append('image', imageFile);
-    
-    // In a real implementation, you would get these from environment variables
-    // For now, we'll use a placeholder URL structure
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
-    const apiUrl = `${supabaseUrl}/functions/v1/process-receipt`;
-    
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key'}`,
-      },
-    });
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result = await response.json();
-    return result;
-    
-  } catch (error) {
-    console.error('Error calling OCR service:', error);
-    
-    // Fallback to local processing if server is unavailable
-    console.warn('Falling back to local OCR simulation');
-    return await processReceiptImageLocal(imageFile);
-  }
+  // Simulate API call delay
+  await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
+  
+  // Generate mock OCR data
+  const mockData = generateMockReceiptData();
+  
+  return {
+    success: true,
+    data: mockData,
+    confidence: 0.85 + Math.random() * 0.1
+  };
 }
 
 export async function processBatchImages(imageFiles) {
@@ -55,19 +35,6 @@ export async function processBatchImages(imageFiles) {
   return results;
 }
 
-// Fallback local processing (same as before)
-async function processReceiptImageLocal(imageFile) {
-  await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 1000));
-  
-  const mockData = generateMockReceiptData();
-  
-  return {
-    success: true,
-    data: mockData,
-    confidence: 0.85 + Math.random() * 0.1
-  };
-}
-
 function generateMockReceiptData() {
   const merchants = [
     'Hotel Marriott', 'Uber Technologies', 'Delta Airlines', 
@@ -84,19 +51,20 @@ function generateMockReceiptData() {
   const merchant = merchants[Math.floor(Math.random() * merchants.length)];
   const category = categories[Math.floor(Math.random() * categories.length)];
   const currency = currencies[Math.floor(Math.random() * currencies.length)];
-  const amount = parseFloat((Math.random() * 500 + 10).toFixed(2));
+  const amount = (Math.random() * 500 + 10).toFixed(2);
   
+  // Generate a date within the last 30 days
   const date = new Date();
   date.setDate(date.getDate() - Math.floor(Math.random() * 30));
   
   return {
     merchant: merchant,
-    amount: amount,
+    amount: parseFloat(amount),
     currency: currency,
     date: date.toISOString().split('T')[0],
     category: category,
     description: `Payment at ${merchant}`,
-    taxAmount: parseFloat((amount * 0.1).toFixed(2)),
+    taxAmount: (amount * 0.1).toFixed(2),
     paymentMethod: 'Credit Card',
     receiptNumber: `RCP-${Math.floor(Math.random() * 999999)}`,
     location: getRandomLocation()
