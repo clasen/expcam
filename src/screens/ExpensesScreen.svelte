@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-  import { expenses, tripData, financialSummary, currentScreen, editingExpense } from '../stores/appStore.js';
+  import { expenses, tripData, financialSummary, currentScreen, editingExpense, currentTab } from '../stores/appStore.js';
   import { autoSave } from '../utils/storage.js';
   
   import ExpenseCard from '../components/ExpenseCard.svelte';
@@ -38,6 +38,10 @@
   
   function openSummaryModal() {
     currentScreen.set('financial-summary');
+  }
+  
+  function switchToCamera() {
+    currentTab.set('camera');
   }
   
   function formatCurrency(amount, currency = 'USD') {
@@ -121,7 +125,7 @@
           }
         </p>
         {#if $expenses.length === 0}
-          <button class="btn-accent">
+          <button class="btn-accent" on:click={switchToCamera}>
             <i class="fas fa-camera mr-2"></i>
             Take Photo
           </button>
