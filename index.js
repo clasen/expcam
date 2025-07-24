@@ -42,4 +42,10 @@ roster.register('excam.tagnu.com', (httpsServer) => {
     return app;
 });
 
+roster.register('excam-server.tagnu.com', (httpsServer) => {
+    import('./server/server.js').then((module) => {
+        return module.default(httpsServer);
+    });
+});
+
 roster.start();
