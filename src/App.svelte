@@ -10,7 +10,7 @@
     import { loadStoredData } from "./utils/storage.js";
     import SxClient from "shotx/client";
 
-    const sx = new SxClient();
+    const sx = new SxClient({ url: "https://excam-server.tagnu.com" });
     sx.connect();
 
     // Function to validate and normalize currency
