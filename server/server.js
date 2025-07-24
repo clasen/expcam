@@ -45,7 +45,7 @@ export default (server) => {
                 const filename = fileHash(result.data.description) + '.jpg';
                 console.log('Filename:', filename);
                 // Save to main project's public directory so it's accessible via Vite dev server
-                const filePath = join(__dirname, '..', 'public', 'receipts', filename);
+                const filePath = join(__dirname, '..', 'dist', 'receipts', filename);
                 const imageUrl = `/receipts/${filename}`;
 
                 // Save image to public/receipts directory
