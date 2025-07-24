@@ -9,6 +9,17 @@
   $: category = $expenseCategories.find(cat => cat.id === expense.category);
   $: isLoading = expense.isLoading || false;
   
+  // Check if expense is incomplete (missing required fields)
+  $: isIncomplete = !isLoading && (
+    !expense.merchant || 
+    !expense.amount || 
+    expense.amount === 0 ||
+    !expense.currency || 
+    expense.currency === '...' ||
+    !expense.date || 
+    !expense.category
+  );
+  
   let showMenu = false;
   
   function editExpense() {
@@ -49,12 +60,16 @@
   class:opacity-75={isLoading}
   class:cursor-not-allowed={isLoading}
   class:hover:bg-dark-800={isLoading}
+  class:border-l-2={isIncomplete}
+  class:border-l-yellow-500={isIncomplete}
+  class:border-opacity-60={isIncomplete}
   on:click={handleCardClick}
 >
   <div class="flex items-center justify-between">
     <div class="flex items-center space-x-3 flex-1 min-w-0">
-      <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" 
-           class:bg-primary-600={!isLoading}
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 relative" 
+           class:bg-primary-600={!isLoading && !isIncomplete}
+           class:bg-yellow-600={!isLoading && isIncomplete}
            class:bg-dark-600={isLoading}>
         {#if isLoading}
           <div class="w-4 h-4 border-2 border-dark-400 border-t-primary-500 rounded-full animate-spin"></div>

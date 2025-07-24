@@ -12,20 +12,41 @@
   
   $: isEditing = $editingExpense !== null;
   
-  // Make formData reactive to data changes
-  $: formData = {
-    merchant: data?.merchant || '',
-    amount: data?.amount || '',
-    currency: data?.currency || '...',
-    date: data?.date || new Date().toISOString().split('T')[0],
-    category: data?.category || '',
-    description: data?.description || '',
-    location: data?.location || '',
-    receiptNumber: data?.receiptNumber || '',
-    paymentMethod: data?.paymentMethod || 'Credit Card',
-    taxAmount: data?.taxAmount || '',
-    imageUrl: data?.imageUrl || null
+  // Initialize formData
+  let formData = {
+    merchant: '',
+    amount: '',
+    currency: '...',
+    date: new Date().toISOString().split('T')[0],
+    category: '',
+    description: '',
+    location: '',
+    receiptNumber: '',
+    paymentMethod: 'Credit Card',
+    taxAmount: '',
+    imageUrl: null
   };
+  
+  // Track when data was last updated to avoid overwriting user changes
+  let lastDataId = null;
+  
+  // Update formData only when we get new data (different expense)
+  $: if (data && data.id !== lastDataId) {
+    lastDataId = data.id;
+    formData = {
+      merchant: data.merchant || '',
+      amount: data.amount || '',
+      currency: data.currency || '...',
+      date: data.date || new Date().toISOString().split('T')[0],
+      category: data.category || '',
+      description: data.description || '',
+      location: data.location || '',
+      receiptNumber: data.receiptNumber || '',
+      paymentMethod: data.paymentMethod || 'Credit Card',
+      taxAmount: data.taxAmount || '',
+      imageUrl: data.imageUrl || null
+    };
+  }
   
   
   let errors = {};

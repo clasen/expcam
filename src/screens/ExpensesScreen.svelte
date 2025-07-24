@@ -17,6 +17,20 @@
   
   $: totalAmount = $expenses.reduce((sum, expense) => sum + expense.amount, 0);
   
+  // Count incomplete expenses
+  $: incompleteCount = $expenses.filter(expense => {
+    const isLoading = expense.isLoading || false;
+    return !isLoading && (
+      !expense.merchant || 
+      !expense.amount || 
+      expense.amount === 0 ||
+      !expense.currency || 
+      expense.currency === '...' ||
+      !expense.date || 
+      !expense.category
+    );
+  }).length;
+  
   onMount(() => {
     autoSave();
   });
@@ -75,8 +89,14 @@
     <div class="flex items-center justify-between p-4">
       <div>
         <h1 class="text-xl font-bold text-white">Expenses</h1>
-        <p class="text-sm text-dark-300">
-          {$expenses.length} expenses • {formatCurrency(totalAmount)}
+        <p class="text-sm text-dark-300 flex items-center gap-2">
+          <span>{$expenses.length} expenses • {formatCurrency(totalAmount)}</span>
+          {#if incompleteCount > 0}
+            <span class="inline-flex items-center gap-1 text-yellow-400 text-xs">
+              <i class="fas fa-exclamation-triangle"></i>
+              {incompleteCount} incomplete
+            </span>
+          {/if}
         </p>
       </div>
       <div class="flex space-x-2">
