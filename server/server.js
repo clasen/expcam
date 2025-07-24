@@ -40,8 +40,14 @@ export default (server) => {
                     });
                 }
 
-                // Now process with sharp as JPEG
-                const jpgBuffer = await sharp(buffer).jpeg().toBuffer();
+                // Now process with sharp as JPEG with compression
+                const jpgBuffer = await sharp(buffer)
+                    .jpeg({ 
+                        quality: 70,  // Reduce quality to 80% for compression
+                        progressive: true,  // Use progressive JPEG for better compression
+                        mozjpeg: true  // Use mozjpeg for better compression
+                    })
+                    .toBuffer();
 
                 // Optionally, you can log or check the format
                 console.log('Incoming image format:', metadata.format);

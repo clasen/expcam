@@ -77,7 +77,6 @@ The camera functionality (`CameraScreen.svelte`) handles:
 ### Key Utilities
 
 - `storage.js`: Handles localStorage operations and data persistence
-- `ocrSimulator.js`: Simulates OCR processing with mock receipt data
 - `validation.js`: Form validation utilities
 
 ### Development Notes
@@ -85,5 +84,3 @@ The camera functionality (`CameraScreen.svelte`) handles:
 - The app uses ES modules (`"type": "module"` in package.json)
 - No test framework is currently configured
 - Uses standard Vite + Svelte configuration without additional build tools
-- Camera functionality includes proper error handling for unsupported browsers
-- OCR is currently simulated - real OCR integration would replace `ocrSimulator.js`

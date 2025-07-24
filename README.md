@@ -1,47 +1,82 @@
-# Svelte + Vite
+## Project Overview
 
-This template should help get you started developing with Svelte in Vite.
+This is a Svelte-based expense tracking mobile web application called "expcam" that allows users to capture receipts via camera or file upload, process them with OCR simulation, and manage expense data. The app is built with Vite, uses Tailwind CSS for styling, and includes FontAwesome icons and the shotx library.
 
-## Recommended IDE Setup
+## Common Development Commands
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+- **Development server**: `npm run dev` - Starts Vite dev server with hot reload
+- **Build for production**: `npm run build` - Creates optimized production build
+- **Preview production build**: `npm run preview` - Serves the production build locally
 
-## Need an official Svelte framework?
+## Architecture Overview
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+### Core Application Structure
 
-## Technical considerations
+The app follows a screen-based navigation pattern with a main container (`App.svelte`) that manages routing between different screens:
 
-**Why use this over SvelteKit?**
+- **Navigation**: Controlled by `currentScreen` and `currentTab` stores
+- **State Management**: Centralized in `src/stores/appStore.js` using Svelte stores
+- **Storage**: Local storage persistence handled in `src/utils/storage.js`
+- **OCR Processing**: Simulated OCR functionality in `src/utils/ocrSimulator.js`
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+### Key Screens and Components
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+**Main Screens** (accessible via bottom navigation):
+- `ExpensesScreen.svelte` - Expense list and management
+- `CameraScreen.svelte` - Receipt capture via camera or file upload  
+- `SettingsScreen.svelte` - App configuration
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+**Modal/Overlay Screens**:
+- `TripDataScreen.svelte` - Trip information form
+- `FinancialSummaryScreen.svelte` - Expense summaries and export
+- `ExpenseFormScreen.svelte` - Individual expense editing
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+**Reusable Components**:
+- `BottomNavigation.svelte` - Main app navigation
+- `ExpenseCard.svelte` - Individual expense display
+- `LoadingSpinner.svelte` - Loading states
+- `SearchableSelect.svelte` - Dropdown with search
+- `TripDataForm.svelte` - Trip data input form
+- `FinancialSummary.svelte` - Financial calculations display
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+### State Management
 
-**Why include `.vscode/extensions.json`?**
+All application state is managed through Svelte stores in `appStore.js`:
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+- **Navigation**: `currentTab`, `currentScreen`, `editingExpense`
+- **Data**: `expenses`, `tripData`, `financialSummary`
+- **Configuration**: `expenseCategories`, `currencies`, `lodgingTypes`, `accountingCodes`
+- **UI State**: `loadingStates`, `appSettings`
 
-**Why enable `checkJs` in the JS template?**
+### Camera and OCR Integration
 
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+The camera functionality (`CameraScreen.svelte`) handles:
+- Native camera access via `getUserMedia` API
+- File upload fallback for unsupported browsers
+- Integration with `ocrSimulator.js` for receipt processing
+- Batch processing of multiple images
 
-**Why is HMR not preserving my local component state?**
+### Styling and Theming
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
+- **Framework**: Tailwind CSS with custom color palette
+- **Theme**: Dark mode design with custom dark color variants
+- **Responsive**: Mobile-first design with desktop fallback (max-width: 480px)
+- **Icons**: FontAwesome icons included via CDN
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+### Data Flow
 
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+1. **Receipt Capture**: Camera or file upload → OCR processing → extracted data
+2. **Expense Creation**: Extracted data → `ExpenseFormScreen` → validation → store in `expenses`
+3. **Data Persistence**: All stores auto-save to localStorage via `storage.js`
+4. **Navigation**: Screen transitions managed by updating `currentScreen` store
+
+### Key Utilities
+
+- `storage.js`: Handles localStorage operations and data persistence
+- `validation.js`: Form validation utilities
+
+### Development Notes
+
+- The app uses ES modules (`"type": "module"` in package.json)
+- No test framework is currently configured
+- Uses standard Vite + Svelte configuration without additional build tools
