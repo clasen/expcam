@@ -4,6 +4,7 @@ import { writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import hashFactory from 'hash-factory';
+import sharp from 'sharp';
 
 const fileHash = hashFactory({ words: true, alpha: true, now: true });
 
@@ -21,8 +22,17 @@ export default (server) => {
     sxServer
         .onMessage('process_receipt', async (data) => {
             try {
+                // Log mimetype if available
+                if (data && data.type) {
+                    console.log('Received mimetype:', data.type);
+                } else {
+                    console.log('Mimetype not provided in data');
+                }
+
+                const jpgBuffer = await sharp(data).jpeg().toBuffer();
+
                 // Process with ModelMix
-                const mmix = ModelMix.new().sonnet4().addImageFromBuffer(data);
+                const mmix = ModelMix.new().sonnet4().addImageFromBuffer(jpgBuffer);
                 const result = await mmix.json({
                     success: true,
                     data: {
@@ -49,7 +59,7 @@ export default (server) => {
                 const imageUrl = `/receipts/${filename}`;
 
                 // Save image to public/receipts directory
-                writeFileSync(filePath, data);
+                writeFileSync(filePath, jpgBuffer);
                 console.log('Image saved to:', filePath);
                 result.data.imageUrl = imageUrl;
 
