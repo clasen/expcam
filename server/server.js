@@ -46,12 +46,12 @@ sxServer
                     taxAmount: (1005.1 * 0.1).toFixed(2),
                     paymentMethod: 'Credit Card',
                     receiptNumber: `RCP-1230121`,
-                    location: 'New York, NY',
-                    imageUrl: imageUrl // Add image URL to the response
+                    location: 'New York, NY'
                 },
                 confidence: 90,
             }, { data: { category: categories.join('|') } }, { addExample: true });
-
+            
+            result.data.imageUrl = imageUrl;
             return result;
         } catch (error) {
             console.error('Error processing receipt:', error);
