@@ -32,45 +32,145 @@
     }));
   }
   
-  function exportFinancialReport() {
-    const reportData = {
-      reportGenerated: new Date().toISOString(),
-      tripInformation: $tripData,
-      expenseSummary: {
-        totalExpenses: $expenses.length,
-        grandTotal: grandTotal,
-        advanceReceived: $financialSummary.advanceReceived,
-        amountToRefund: amountToRefund,
-        currency: $financialSummary.selectedCurrency
-      },
-      categoryBreakdown: categoryTotals.filter(cat => cat.total > 0),
-      detailedExpenses: $expenses.map(expense => ({
-        id: expense.id,
-        merchant: expense.merchant,
-        amount: expense.amount,
-        currency: expense.currency,
-        date: expense.date,
-        category: expense.category,
-        description: expense.description,
-        location: expense.location,
-        receiptNumber: expense.receiptNumber,
-        paymentMethod: expense.paymentMethod,
-        taxAmount: expense.taxAmount
-      }))
-    };
+  async function exportFinancialReport() {
+    try {
+      // Create individual files and download them separately
+      const timestamp = new Date().toISOString().split('T')[0];
+      const travelId = $tripData.travelId || 'draft';
+      
+      // 1. Download CSV file with all expenses
+      downloadExpensesCSV(timestamp, travelId);
+      
+      // 2. Download trip information
+      downloadTripInfo(timestamp, travelId);
+      
+      // 3. Download receipt images
+      await downloadReceiptImages();
+      
+      alert('Export completed! Multiple files have been downloaded to your Downloads folder.');
+      
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Error exporting data. Please try again.');
+    }
+  }
+  
+  function downloadExpensesCSV(timestamp, travelId) {
+    const headers = [
+      'ID', 'Date', 'Merchant', 'Amount', 'Currency', 'Category', 
+      'Description', 'Location', 'Receipt Number', 'Payment Method', 
+      'Tax Amount', 'Created At', 'Updated At'
+    ];
     
-    const blob = new Blob([JSON.stringify(reportData, null, 2)], {
-      type: 'application/json'
-    });
+    const rows = $expenses.map(expense => [
+      expense.id || '',
+      expense.date || '',
+      expense.merchant || '',
+      expense.amount || 0,
+      expense.currency || '',
+      expense.category || '',
+      expense.description || '',
+      expense.location || '',
+      expense.receiptNumber || '',
+      expense.paymentMethod || '',
+      expense.taxAmount || 0,
+      expense.createdAt || '',
+      expense.updatedAt || ''
+    ]);
     
+    const csvContent = [headers, ...rows]
+      .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `expense-report-${$tripData.travelId || 'draft'}-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `expenses-${travelId}-${timestamp}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+  
+  function downloadTripInfo(timestamp, travelId) {
+    const info = `TRIP INFORMATION
+================
+
+Travel ID: ${$tripData.travelId || 'N/A'}
+From Date: ${$tripData.fromDate || 'N/A'}
+To Date: ${$tripData.toDate || 'N/A'}
+Travel Days: ${$tripData.travelDays || 'N/A'}
+Lodging Type: ${$tripData.lodgingType || 'N/A'}
+Accounting Code: ${$tripData.accountingCode || 'N/A'}
+Expense Type: ${$tripData.expenseType || 'N/A'}
+Approving Manager: ${$tripData.approvingManager || 'N/A'}
+
+EXPORT SUMMARY
+==============
+
+Report Generated: ${new Date().toISOString()}
+Total Expenses: ${$expenses.length}
+Grand Total: ${formatCurrency(grandTotal)}
+Advance Received: ${formatCurrency($financialSummary.advanceReceived)}
+Amount to Refund: ${formatCurrency(amountToRefund)}
+Selected Currency: ${$financialSummary.selectedCurrency}
+
+EXPENSE SUMMARY BY CATEGORY
+===========================
+
+${categoryTotals.filter(cat => cat.total > 0).map(cat => 
+  `${cat.name}: ${formatCurrency(cat.total)}`
+).join('\n')}
+`;
+    
+    const blob = new Blob([info], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `trip-info-${travelId}-${timestamp}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+  
+  async function downloadReceiptImages() {
+    let imageCount = 0;
+    
+    for (const expense of $expenses) {
+      if (expense.imageUrl) {
+        try {
+          // Convert image URL to blob and download
+          const response = await fetch(expense.imageUrl);
+          const blob = await response.blob();
+          const fileName = `receipt-${expense.id}-${expense.merchant?.replace(/[^a-zA-Z0-9]/g, '_') || 'unknown'}.jpg`;
+          
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          imageCount++;
+          
+          // Small delay to avoid overwhelming the browser
+          await new Promise(resolve => setTimeout(resolve, 200));
+          
+        } catch (error) {
+          console.warn(`Failed to download image for expense ${expense.id}:`, error);
+        }
+      }
+    }
+    
+    if (imageCount === 0) {
+      console.log('No receipt images found to download.');
+    } else {
+      console.log(`Downloaded ${imageCount} receipt images.`);
+    }
   }
 </script>
 

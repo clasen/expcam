@@ -12,6 +12,6 @@
     "dotenv": "^17.2.0",
     "hash-factory": "^1.1.2",
     "modelmix": "^3.7.2",
-    "shotx": "^1.3.2"
+    "shotx": "^1.3.4"
   }
 }
