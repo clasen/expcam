@@ -23,7 +23,6 @@
     location: '',
     receiptNumber: '',
     paymentMethod: 'Credit Card',
-    taxAmount: '',
     imageUrl: null
   };
   
@@ -43,7 +42,6 @@
       location: data.location || '',
       receiptNumber: data.receiptNumber || '',
       paymentMethod: data.paymentMethod || 'Credit Card',
-      taxAmount: data.taxAmount || '',
       imageUrl: data.imageUrl || null
     };
   }
@@ -69,7 +67,6 @@
           ...$editingExpense,
           ...formData,
           amount: parseFloat(formData.amount),
-          taxAmount: formData.taxAmount ? parseFloat(formData.taxAmount) : 0,
           imageUrl: formData.imageUrl, // Preserve image URL
           updatedAt: new Date().toISOString()
         };
@@ -83,7 +80,6 @@
           id: Date.now() + Math.random(),
           ...formData,
           amount: parseFloat(formData.amount),
-          taxAmount: formData.taxAmount ? parseFloat(formData.taxAmount) : 0,
           imageUrl: formData.imageUrl, // Preserve image URL
           createdAt: new Date().toISOString()
         };
@@ -238,32 +234,17 @@
       >
     </div>
     
-    <!-- Additional Details -->
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <label class="block text-sm font-medium text-dark-200 mb-2">
-          Receipt Number
-        </label>
-        <input
-          type="text"
-          bind:value={formData.receiptNumber}
-          placeholder="Receipt #"
-          class="input-field"
-        >
-      </div>
-      
-      <div>
-        <label class="block text-sm font-medium text-dark-200 mb-2">
-          Tax Amount
-        </label>
-        <input
-          type="number"
-          step="0.01"
-          bind:value={formData.taxAmount}
-          placeholder="0.00"
-          class="input-field"
-        >
-      </div>
+    <!-- Receipt Number -->
+    <div>
+      <label class="block text-sm font-medium text-dark-200 mb-2">
+        Receipt Number
+      </label>
+      <input
+        type="text"
+        bind:value={formData.receiptNumber}
+        placeholder="Receipt #"
+        class="input-field"
+      >
     </div>
     
     <!-- Payment Method -->

@@ -3,36 +3,6 @@
   import { tripData } from '../stores/appStore.js';
   import JSZip from 'jszip';
   
-  $: categoryTotals = $expenseCategories.map(category => {
-    const total = $expenses
-      .filter(expense => expense.category === category.id)
-      .reduce((sum, expense) => sum + expense.amount, 0);
-    
-    return {
-      ...category,
-      total
-    };
-  });
-  
-  $: grandTotal = $expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  $: amountToRefund = grandTotal - $financialSummary.advanceReceived;
-  
-  function formatCurrency(amount, currency = $financialSummary.selectedCurrency) {
-    if (currency === '...') {
-      return `... ${amount.toFixed(2)}`;
-    }
-    return `${currency} ${amount.toFixed(2)}`;
-  }
-  
-  function updateAdvance(event) {
-    const advance = parseFloat(event.target.value) || 0;
-    financialSummary.update(summary => ({
-      ...summary,
-      advanceReceived: advance,
-      amountToRefund: grandTotal - advance
-    }));
-  }
-  
   async function exportFinancialReport() {
     try {
       const zip = new JSZip();
@@ -72,7 +42,7 @@
       // Expense Information  
       'Expense ID', 'Date', 'Merchant', 'Amount', 'Currency', 'Category', 
       'Description', 'Location', 'Receipt Number', 'Payment Method', 
-      'Tax Amount', 'Created At', 'Updated At'
+      'Created At', 'Updated At'
     ];
     
     const rows = $expenses.map(expense => [
@@ -96,7 +66,6 @@
       expense.location || '',
       expense.receiptNumber || '',
       expense.paymentMethod || '',
-      expense.taxAmount || 0,
       expense.createdAt || '',
       expense.updatedAt || ''
     ]);
@@ -135,113 +104,16 @@
 </script>
 
 <div class="space-y-6">
-  <!-- Category Breakdown -->
-  <div>
-    <h3 class="text-lg font-semibold text-white mb-4">
-      <i class="fas fa-chart-pie mr-2 text-primary-500"></i>
-      Expense Breakdown
-    </h3>
-    
-    <div class="space-y-3">
-      {#each categoryTotals as category}
-        <div class="flex items-center justify-between p-3 bg-dark-700 rounded-lg">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <i class="fas {category.icon} text-white text-sm"></i>
-            </div>
-            <span class="text-white">{category.name}</span>
-          </div>
-          <span class="font-semibold text-accent-500">
-            {formatCurrency(category.total)}
-          </span>
-        </div>
-      {/each}
-    </div>
-  </div>
-  
-  <!-- Financial Summary -->
-  <div>
-    <h3 class="text-lg font-semibold text-white mb-4">
-      <i class="fas fa-calculator mr-2 text-accent-500"></i>
-      Financial Summary
-    </h3>
-    
-    <div class="space-y-4">
-      <!-- Grand Total -->
-      <div class="flex items-center justify-between p-4 bg-dark-700 rounded-lg border border-primary-600">
-        <span class="text-white font-medium">Grand Total</span>
-        <span class="font-bold text-xl text-primary-500">
-          {formatCurrency(grandTotal)}
-        </span>
-      </div>
-      
-      <!-- Advance Received -->
-      <div class="space-y-2">
-        <label class="block text-sm font-medium text-dark-200">
-          Advance Received from Treasury
-        </label>
-        <input
-          type="number"
-          step="0.01"
-          value={$financialSummary.advanceReceived}
-          on:input={updateAdvance}
-          placeholder="0.00"
-          class="input-field"
-        >
-      </div>
-      
-      <!-- Amount to Refund/Reimburse -->
-      <div class="flex items-center justify-between p-4 rounded-lg"
-           class:bg-success-600={amountToRefund < 0}
-           class:bg-error-600={amountToRefund > 0}
-           class:bg-dark-700={amountToRefund === 0}>
-        <span class="text-white font-medium">
-          {amountToRefund > 0 ? 'Amount to be Reimbursed' : 
-           amountToRefund < 0 ? 'Amount to be Refunded' : 
-           'Balanced'}
-        </span>
-        <span class="font-bold text-xl text-white">
-          {formatCurrency(Math.abs(amountToRefund))}
-        </span>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Currency Settings -->
-  <div>
-    <h3 class="text-lg font-semibold text-white mb-4">
-      <i class="fas fa-exchange-alt mr-2 text-secondary-500"></i>
-      Currency Settings
-    </h3>
-    
-    <div class="space-y-3">
-      <div>
-        <label class="block text-sm font-medium text-dark-200 mb-2">
-          Report Currency
-        </label>
-        <select
-          bind:value={$financialSummary.selectedCurrency}
-          class="input-field"
-        >
-          <option value="USD">USD - US Dollar</option>
-          <option value="EUR">EUR - Euro</option>
-          <option value="GBP">GBP - British Pound</option>
-          <option value="JPY">JPY - Japanese Yen</option>
-        </select>
-      </div>
-      
-      <div class="p-3 bg-dark-700 rounded-lg">
-        <p class="text-sm text-dark-300">
-          <i class="fas fa-info-circle mr-2 text-primary-500"></i>
-          Currency conversion rates are applied automatically based on expense dates.
-        </p>
-      </div>
-    </div>
+  <!-- Info Message -->
+  <div class="p-4 bg-dark-700 rounded-lg border border-dark-600">
+    <p class="text-sm text-dark-300">
+      <i class="fas fa-info-circle mr-2 text-primary-500"></i>
+      Export includes all expenses with individual currencies. No totals are calculated due to mixed currencies.
+    </p>
   </div>
   
   <!-- Export Summary -->
   <div class="pt-4 border-t border-dark-700">
-    <button class="btn-primary w-full">
     <button 
       class="btn-primary w-full"
       on:click={exportFinancialReport}
