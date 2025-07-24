@@ -1,12 +1,26 @@
 <script>
   import { onMount } from 'svelte';
-  import { currentTab, currentScreen, expenses, tripData } from './stores/appStore.js';
+  import { currentTab, currentScreen, expenses, tripData, currencies } from './stores/appStore.js';
   import { loadStoredData } from './utils/storage.js';
   import { processReceiptImage } from './utils/ocrSimulator.js';
   import SxClient from 'shotx/client';
   
   const sx = new SxClient();
   sx.connect();
+  
+  // Function to validate and normalize currency
+  function validateCurrency(currency) {
+    if (!currency) return '...';
+    
+    // Get current supported currencies
+    let supportedCurrencies = [];
+    currencies.subscribe(currencyList => {
+      supportedCurrencies = currencyList.map(c => c.code);
+    })();
+    
+    // If currency is supported, return it; otherwise return '...'
+    return supportedCurrencies.includes(currency) ? currency : '...';
+  }
   
   import ExpensesScreen from './screens/ExpensesScreen.svelte';
   import CameraScreen from './screens/CameraScreen.svelte';
@@ -55,7 +69,7 @@
       id: tempId,
       merchant: '',
       amount: 0,
-      currency: 'USD',
+      currency: '...',
       date: new Date().toISOString().split('T')[0],
       category: '',
       description: '',
@@ -83,10 +97,11 @@
       }
       
       if (result.success) {
-        // Update the placeholder with real data
+        // Update the placeholder with real data and validate currency
         const processedExpense = {
           id: tempId, // Keep same ID
           ...result.data,
+          currency: validateCurrency(result.data.currency),
           isLoading: false,
           createdAt: new Date().toISOString()
         };
@@ -114,7 +129,7 @@
       id: Date.now() + Math.random() + index,
       merchant: '',
       amount: 0,
-      currency: 'USD',
+      currency: '...',
       date: new Date().toISOString().split('T')[0],
       category: '',
       description: '',
@@ -147,10 +162,11 @@
         }
         
         if (result.success) {
-          // Update placeholder with real data
+          // Update placeholder with real data and validate currency
           const processedExpense = {
             id: placeholder.id, // Keep same ID
             ...result.data,
+            currency: validateCurrency(result.data.currency),
             isLoading: false,
             createdAt: new Date().toISOString()
           };

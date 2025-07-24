@@ -32,6 +32,7 @@ export const expenseCategories = writable([
 
 // Currencies
 export const currencies = writable([
+  { code: '...', name: 'No detectada', symbol: '...', rate: 1.0 },
   { code: 'USD', name: 'US Dollar', symbol: '$', rate: 1.0 },
   { code: 'EUR', name: 'Euro', symbol: '€', rate: 0.85 },
   { code: 'GBP', name: 'British Pound', symbol: '£', rate: 0.75 },

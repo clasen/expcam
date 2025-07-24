@@ -40,23 +40,32 @@
     currentScreen.set('financial-summary');
   }
   
-  function switchToCamera() {
-    currentTab.set('camera');
-    // Trigger camera initialization after tab switch
-    setTimeout(() => {
-      const event = new CustomEvent('initializeCamera');
-      window.dispatchEvent(event);
-    }, 100);
+  function triggerFileUpload() {
+    // Create a hidden file input and trigger it
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.multiple = true;
+    fileInput.style.display = 'none';
+    
+    fileInput.onchange = (event) => {
+      const files = Array.from(event.target.files);
+      if (files.length > 0) {
+        // Dispatch a custom event with the selected files
+        window.dispatchEvent(new CustomEvent('filesSelected', { detail: files }));
+      }
+      document.body.removeChild(fileInput);
+    };
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
   }
   
   function formatCurrency(amount, currency = 'USD') {
-    if (currency === 'ARS') {
-      return `$${amount.toFixed(2)} ARS`;
+    if (currency === '...') {
+      return `... ${amount.toFixed(2)}`;
     }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency
-    }).format(amount);
+    return `${currency} ${amount.toFixed(2)}`;
   }
 </script>
 
@@ -125,14 +134,14 @@
         </h3>
         <p class="text-dark-400 mb-6">
           {$expenses.length === 0 
-            ? 'Start by taking photos of your receipts using the camera tab'
+            ? 'Start by uploading images of your receipts'
             : 'Try adjusting your search or filter criteria'
           }
         </p>
         {#if $expenses.length === 0}
-          <button class="btn-accent" on:click={switchToCamera}>
-            <i class="fas fa-camera mr-2"></i>
-            Take Photo
+          <button class="btn-accent" on:click={triggerFileUpload}>
+            <i class="fas fa-upload mr-2"></i>
+            Upload Image
           </button>
         {/if}
       </div>

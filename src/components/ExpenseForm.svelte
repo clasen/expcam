@@ -16,7 +16,7 @@
   $: formData = {
     merchant: data?.merchant || '',
     amount: data?.amount || '',
-    currency: data?.currency || 'USD',
+    currency: data?.currency || '...',
     date: data?.date || new Date().toISOString().split('T')[0],
     category: data?.category || '',
     description: data?.description || '',

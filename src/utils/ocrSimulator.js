@@ -46,7 +46,7 @@ function generateMockReceiptData() {
     'lodging', 'transport', 'meals', 'miscellaneous', 'purchases'
   ];
   
-  const currencies = ['USD', 'EUR', 'GBP'];
+  const currencies = ['USD', 'EUR', 'GBP', '...', 'GTQ'];
   
   const merchant = merchants[Math.floor(Math.random() * merchants.length)];
   const category = categories[Math.floor(Math.random() * categories.length)];

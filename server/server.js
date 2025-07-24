@@ -49,7 +49,7 @@ sxServer
                     location: 'New York, NY'
                 },
                 confidence: 90,
-            }, { data: { category: categories.join('|') } }, { addExample: true });
+            }, { data: { category: categories.join('|') }, currency: 'ISO 4217 currency code' }, { addExample: true });
             
             result.data.imageUrl = imageUrl;
             return result;

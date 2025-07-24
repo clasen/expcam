@@ -37,13 +37,10 @@
   }
   
   function formatCurrency(amount, currency = 'USD') {
-    if (currency === 'ARS') {
-      return `$${amount.toFixed(2)} ARS`;
+    if (currency === '...') {
+      return `... ${amount.toFixed(2)}`;
     }
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency
-    }).format(amount);
+    return `${currency} ${amount.toFixed(2)}`;
   }
 </script>
 
