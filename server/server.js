@@ -42,11 +42,8 @@ export default (server) => {
 
                 // Now process with sharp as JPEG with compression
                 const jpgBuffer = await sharp(buffer)
-                    .jpeg({ 
-                        quality: 70,  // Reduce quality to 80% for compression
-                        progressive: true,  // Use progressive JPEG for better compression
-                        mozjpeg: true  // Use mozjpeg for better compression
-                    })
+                    .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
+                    .jpeg({ quality: 70, progressive: true, mozjpeg: true })
                     .toBuffer();
 
                 // Optionally, you can log or check the format
