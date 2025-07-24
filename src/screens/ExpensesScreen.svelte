@@ -16,7 +16,16 @@
     return matchesSearch && matchesCategory;
   });
   
-  $: totalAmount = $expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  // Calculate total only if all expenses have the same currency
+  $: {
+    const currencies = [...new Set($expenses.map(exp => exp.currency).filter(c => c && c !== '...'))];
+    const hasSameCurrency = currencies.length <= 1;
+    totalAmount = hasSameCurrency ? $expenses.reduce((sum, expense) => sum + expense.amount, 0) : null;
+    totalCurrency = hasSameCurrency && currencies.length > 0 ? currencies[0] : null;
+  }
+  
+  let totalAmount = null;
+  let totalCurrency = null;
   
   // Count incomplete expenses
   $: incompleteCount = $expenses.filter(expense => {
@@ -186,7 +195,12 @@
       <div>
         <h1 class="text-xl font-bold text-white">Expenses</h1>
         <p class="text-sm text-dark-300 flex items-center gap-2">
-          <span>{$expenses.length} expenses • {formatCurrency(totalAmount)}</span>
+          <span>
+            {$expenses.length} expenses
+            {#if totalAmount !== null && totalCurrency}
+              • {formatCurrency(totalAmount, totalCurrency)}
+            {/if}
+          </span>
           {#if incompleteCount > 0}
             <span class="inline-flex items-center gap-1 text-yellow-400 text-xs">
               <i class="fas fa-exclamation-triangle"></i>

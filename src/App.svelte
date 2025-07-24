@@ -10,7 +10,7 @@
     import { loadStoredData } from "./utils/storage.js";
     import SxClient from "shotx/client";
 
-    const sx = new SxClient({ url: "https://excam-server.tagnu.com" });
+    const sx = new SxClient(/*{ url: "https://excam-server.tagnu.com" }*/);
     sx.connect();
 
     // Function to validate and normalize currency
@@ -25,6 +25,57 @@
 
         // If currency is supported, return it; otherwise return '...'
         return supportedCurrencies.includes(currency) ? currency : "...";
+    }
+
+    // Function to process image on client side (compress and convert to JPG)
+    async function processImageFile(file) {
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = function() {
+                // Calculate new dimensions (max 2560px on longest side)
+                const maxSize = 2560;
+                let { width, height } = img;
+                
+                if (width > height) {
+                    if (width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                }
+
+                // Set canvas dimensions
+                canvas.width = width;
+                canvas.height = height;
+
+                // Draw and compress
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to blob with compression
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        // Create a new File object with JPG extension
+                        const processedFile = new File([blob], 
+                            file.name.replace(/\.[^/.]+$/, '.jpg'), 
+                            { type: 'image/jpeg' }
+                        );
+                        resolve(processedFile);
+                    } else {
+                        reject(new Error('Failed to process image'));
+                    }
+                }, 'image/jpeg', 0.8); // 80% quality
+            };
+
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = URL.createObjectURL(file);
+        });
     }
 
     import ExpensesScreen from "./screens/ExpensesScreen.svelte";
@@ -91,8 +142,11 @@
 
         // Process in background
         try {
+            // Process image on client side before sending
+            const processedFile = await processImageFile(file);
+            
             // Try server first, fall back to simulator
-            const result = await sx.send("process_receipt", file);
+            const result = await sx.send("process_receipt", processedFile);
 
             if (result.success) {
                 // Update the placeholder with real data and validate currency
@@ -151,8 +205,11 @@
             const placeholder = placeholders[i];
 
             try {
+                // Process image on client side before sending
+                const processedFile = await processImageFile(file);
+                
                 // Try server first, fall back to simulator
-                const result = await sx.send("process_receipt", file);
+                const result = await sx.send("process_receipt", processedFile);
                 console.log("Server result for", file.name, ":", result);
 
                 if (result.success) {
