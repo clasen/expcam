@@ -64,7 +64,6 @@ export default (server) => {
                         hour: '13:20',
                         category: 'transport',
                         description: `Delta Airlines flight from New York to Los Angeles`,
-                        taxAmount: (1005.1 * 0.1).toFixed(2),
                         paymentMethod: 'Credit Card',
                         receiptNumber: `RCP-1230121`,
                         location: 'New York, NY'
