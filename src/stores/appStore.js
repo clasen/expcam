@@ -67,7 +67,6 @@ export const appSettings = writable({
   currency: 'USD',
   autoSave: true,
   notifications: true,
-  simpleCameraMode: false
 });
 
 // Loading States

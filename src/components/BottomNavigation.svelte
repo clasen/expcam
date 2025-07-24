@@ -1,32 +1,15 @@
 <script>
-  import { currentTab, appSettings } from '../stores/appStore.js';
-  import { onMount } from 'svelte';
-  
-  let showCameraClose = false;
-  
-  // Listen for camera state changes
-  onMount(() => {
-    const checkCameraState = () => {
-      // Check if camera is active by looking for video element
-      const videoElement = document.querySelector('video');
-      showCameraClose = videoElement && videoElement.srcObject;
-    };
-    
-    // Check periodically
-    const interval = setInterval(checkCameraState, 500);
-    
-    return () => clearInterval(interval);
-  });
+  import { currentTab } from '../stores/appStore.js';
   
   const tabs = [
     { id: 'expenses', icon: 'fas fa-receipt', label: 'Expenses' },
-    { id: 'camera', icon: 'fas fa-camera', label: 'Camera' },
+    { id: 'camera', icon: 'fas fa-upload', label: 'Upload' },
     { id: 'settings', icon: 'fas fa-cog', label: 'Settings' }
   ];
   
   function switchTab(tabId) {
-    // If camera tab is clicked and simple camera mode is enabled, directly trigger file picker
-    if (tabId === 'camera' && $appSettings.simpleCameraMode) {
+    // If camera tab is clicked, switch to tab and trigger file picker
+    if (tabId === 'camera') {
       // First switch to camera tab to make sure CameraScreen is mounted
       currentTab.set(tabId);
       // Then trigger file upload after a small delay to ensure component is ready
@@ -59,11 +42,6 @@
     document.body.appendChild(fileInput);
     fileInput.click();
   }
-  
-  function closeCamera() {
-    // Dispatch custom event to close camera
-    window.dispatchEvent(new CustomEvent('closeCamera'));
-  }
 </script>
 
 <nav class="bg-dark-800 border-t border-dark-700 safe-area-bottom">
@@ -71,20 +49,10 @@
     {#each tabs as tab}
       <button
         class="nav-tab {$currentTab === tab.id ? 'active' : ''}"
-        on:click={() => {
-          if (tab.id === 'camera' && showCameraClose) {
-            closeCamera();
-          } else {
-            switchTab(tab.id);
-          }
-        }}
+        on:click={() => switchTab(tab.id)}
         aria-label={tab.label}
       >
-        {#if tab.id === 'camera' && showCameraClose}
-          <i class="fas fa-times text-2xl text-dark-400"></i>
-        {:else}
-          <i class="{tab.icon} text-2xl"></i>
-        {/if}
+        <i class="{tab.icon} text-2xl"></i>
       </button>
     {/each}
   </div>

@@ -116,24 +116,6 @@
             </button>
           </div>
           
-          <div class="flex items-center justify-between">
-            <div>
-              <h3 class="font-medium text-white">Simple Camera Mode</h3>
-              <p class="text-sm text-dark-400">Camera button opens file picker directly</p>
-            </div>
-            <button
-              class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-dark-800"
-              class:bg-primary-600={$appSettings.simpleCameraMode}
-              class:bg-dark-600={!$appSettings.simpleCameraMode}
-              on:click={() => toggleSetting('simpleCameraMode')}
-            >
-              <span
-                class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                class:translate-x-6={$appSettings.simpleCameraMode}
-                class:translate-x-1={!$appSettings.simpleCameraMode}
-              ></span>
-            </button>
-          </div>
         </div>
       </section>
       
