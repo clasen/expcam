@@ -1,6 +1,7 @@
 <script>
   import { expenses, financialSummary, expenseCategories } from '../stores/appStore.js';
   import { tripData } from '../stores/appStore.js';
+  import JSZip from 'jszip';
   
   $: categoryTotals = $expenseCategories.map(category => {
     const total = $expenses
@@ -34,35 +35,57 @@
   
   async function exportFinancialReport() {
     try {
-      // Create individual files and download them separately
+      const zip = new JSZip();
       const timestamp = new Date().toISOString().split('T')[0];
       const travelId = $tripData.travelId || 'draft';
       
-      // 1. Download CSV file with all expenses
-      downloadExpensesCSV(timestamp, travelId);
+      // 1. Add CSV file with expenses and trip information
+      const csvContent = generateExpensesCSVWithTripInfo();
+      zip.file(`expenses-${travelId}-${timestamp}.csv`, csvContent);
       
-      // 2. Download trip information
-      downloadTripInfo(timestamp, travelId);
+      // 2. Add receipt images
+      await addReceiptImagesToZip(zip);
       
-      // 3. Download receipt images
-      await downloadReceiptImages();
-      
-      alert('Export completed! Multiple files have been downloaded to your Downloads folder.');
+      // 3. Generate and download ZIP
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `expense-export-${travelId}-${timestamp}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
       
     } catch (error) {
       console.error('Export error:', error);
-      alert('Error exporting data. Please try again.');
+      alert('Error creating ZIP file. Please try again.');
     }
   }
   
-  function downloadExpensesCSV(timestamp, travelId) {
+  function generateExpensesCSVWithTripInfo() {
+    // Headers include both expense and trip information
     const headers = [
-      'ID', 'Date', 'Merchant', 'Amount', 'Currency', 'Category', 
+      // Trip Information
+      'Travel ID', 'From Date', 'To Date', 'Travel Days', 'Lodging Type', 
+      'Accounting Code', 'Expense Type', 'Approving Manager',
+      // Expense Information  
+      'Expense ID', 'Date', 'Merchant', 'Amount', 'Currency', 'Category', 
       'Description', 'Location', 'Receipt Number', 'Payment Method', 
       'Tax Amount', 'Created At', 'Updated At'
     ];
     
     const rows = $expenses.map(expense => [
+      // Trip Information (repeated for each expense)
+      $tripData.travelId || '',
+      $tripData.fromDate || '',
+      $tripData.toDate || '',
+      $tripData.travelDays || '',
+      $tripData.lodgingType || '',
+      $tripData.accountingCode || '',
+      $tripData.expenseType || '',
+      $tripData.approvingManager || '',
+      // Expense Information
       expense.id || '',
       expense.date || '',
       expense.merchant || '',
@@ -82,95 +105,32 @@
       .map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
       .join('\n');
     
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `expenses-${travelId}-${timestamp}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    return csvContent;
   }
   
-  function downloadTripInfo(timestamp, travelId) {
-    const info = `TRIP INFORMATION
-================
-
-Travel ID: ${$tripData.travelId || 'N/A'}
-From Date: ${$tripData.fromDate || 'N/A'}
-To Date: ${$tripData.toDate || 'N/A'}
-Travel Days: ${$tripData.travelDays || 'N/A'}
-Lodging Type: ${$tripData.lodgingType || 'N/A'}
-Accounting Code: ${$tripData.accountingCode || 'N/A'}
-Expense Type: ${$tripData.expenseType || 'N/A'}
-Approving Manager: ${$tripData.approvingManager || 'N/A'}
-
-EXPORT SUMMARY
-==============
-
-Report Generated: ${new Date().toISOString()}
-Total Expenses: ${$expenses.length}
-Grand Total: ${formatCurrency(grandTotal)}
-Advance Received: ${formatCurrency($financialSummary.advanceReceived)}
-Amount to Refund: ${formatCurrency(amountToRefund)}
-Selected Currency: ${$financialSummary.selectedCurrency}
-
-EXPENSE SUMMARY BY CATEGORY
-===========================
-
-${categoryTotals.filter(cat => cat.total > 0).map(cat => 
-  `${cat.name}: ${formatCurrency(cat.total)}`
-).join('\n')}
-`;
-    
-    const blob = new Blob([info], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `trip-info-${travelId}-${timestamp}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-  
-  async function downloadReceiptImages() {
+  async function addReceiptImagesToZip(zip) {
+    const imagesFolder = zip.folder('receipt-images');
     let imageCount = 0;
     
     for (const expense of $expenses) {
       if (expense.imageUrl) {
         try {
-          // Convert image URL to blob and download
+          // Convert image URL to blob and add to ZIP
           const response = await fetch(expense.imageUrl);
           const blob = await response.blob();
           const fileName = `receipt-${expense.id}-${expense.merchant?.replace(/[^a-zA-Z0-9]/g, '_') || 'unknown'}.jpg`;
           
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fileName;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          
+          imagesFolder.file(fileName, blob);
           imageCount++;
           
-          // Small delay to avoid overwhelming the browser
-          await new Promise(resolve => setTimeout(resolve, 200));
-          
         } catch (error) {
-          console.warn(`Failed to download image for expense ${expense.id}:`, error);
+          console.warn(`Failed to add image for expense ${expense.id} to ZIP:`, error);
         }
       }
     }
     
-    if (imageCount === 0) {
-      console.log('No receipt images found to download.');
-    } else {
-      console.log(`Downloaded ${imageCount} receipt images.`);
-    }
+    console.log(`Added ${imageCount} receipt images to ZIP.`);
+    return imageCount;
   }
 </script>
 
