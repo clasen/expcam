@@ -5,6 +5,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import hashFactory from 'hash-factory';
 import sharp from 'sharp';
+import heicConvert from 'heic-convert';
 
 const fileHash = hashFactory({ words: true, alpha: true, now: true });
 
@@ -12,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default (server) => {
-    const sxServer = new SxServer({ server });
+    const sxServer = new SxServer({ server, opts: { maxHttpBufferSize: 10 * 1024 * 1024 } });
 
     const categories = [
         'lodging', 'transport', 'meals', 'miscellaneous', 'purchases', 'other'
@@ -22,14 +23,28 @@ export default (server) => {
     sxServer
         .onMessage('process_receipt', async (data) => {
             try {
-                // Log mimetype if available
-                if (data && data.type) {
-                    console.log('Received mimetype:', data.type);
-                } else {
-                    console.log('Mimetype not provided in data');
+                let buffer = data;
+                let format = null;
+
+                // Detect format
+                const image = sharp(data);
+                const metadata = await image.metadata();
+                format = metadata.format;
+
+                if (format === 'heif' || format === 'heic') {
+                    // Convert HEIC to JPEG buffer
+                    buffer = await heicConvert({
+                        buffer: data, // the HEIC file buffer
+                        format: 'JPEG',
+                        quality: 1
+                    });
                 }
 
-                const jpgBuffer = await sharp(data).jpeg().toBuffer();
+                // Now process with sharp as JPEG
+                const jpgBuffer = await sharp(buffer).jpeg().toBuffer();
+
+                // Optionally, you can log or check the format
+                console.log('Incoming image format:', metadata.format);
 
                 // Process with ModelMix
                 const mmix = ModelMix.new().sonnet4().addImageFromBuffer(jpgBuffer);
