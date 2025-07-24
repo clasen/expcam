@@ -84,9 +84,7 @@
     // Add placeholder to expenses list immediately
     expenses.update(list => [loadingExpense, ...list]);
     
-    // Navigate to expenses list
-    currentScreen.set('main');
-    currentTab.set('expenses');
+    // Stay on current screen - don't navigate
     
     // Process in background
     try {
@@ -147,9 +145,7 @@
     // Add all placeholders to expenses list immediately
     expenses.update(list => [...placeholders, ...list]);
     
-    // Navigate to expenses list
-    currentScreen.set('main');
-    currentTab.set('expenses');
+    // Stay on current screen - don't navigate
     
     // Process each file in background
     for (let i = 0; i < files.length; i++) {

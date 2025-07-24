@@ -8,12 +8,9 @@
   ];
   
   function switchTab(tabId) {
-    // If camera tab is clicked, switch to tab and trigger file picker
+    // If camera tab is clicked, trigger file picker without changing screens
     if (tabId === 'camera') {
-      // First switch to camera tab to make sure CameraScreen is mounted
-      currentTab.set(tabId);
-      // Then trigger file upload after a small delay to ensure component is ready
-      setTimeout(triggerFileUpload, 100);
+      triggerFileUpload();
     } else {
       currentTab.set(tabId);
     }
