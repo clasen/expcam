@@ -79,3 +79,6 @@ export const loadingStates = writable({
 
 // Notifications
 export const notification = writable(null);
+
+// Processing states for expenses (no longer needed)
+// export const backgroundProcessing = writable([]);

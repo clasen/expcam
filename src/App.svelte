@@ -11,7 +11,6 @@
   import ExpenseFormScreen from './screens/ExpenseFormScreen.svelte';
   import BottomNavigation from './components/BottomNavigation.svelte';
   import LoadingSpinner from './components/LoadingSpinner.svelte';
-  import Notification from './components/Notification.svelte';
   
   let isLoading = true;
   
@@ -59,8 +58,6 @@
     {/if}
   {/if}
 
-  <!-- Global Notification -->
-  <Notification />
 </div>
 
 <style>

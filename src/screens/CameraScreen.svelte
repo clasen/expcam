@@ -6,7 +6,6 @@
     currentScreen,
     currentTab,
     appSettings,
-    notification,
   } from "../stores/appStore.js";
   import {
     processReceiptImage,
@@ -172,9 +171,36 @@
   }
 
   async function processImage(file) {
-    console.log('Starting image processing for:', file.name);
-    loadingStates.update((state) => ({ ...state, ocr: true }));
-
+    console.log('Starting processing for:', file.name);
+    
+    // Create loading placeholder expense
+    const tempId = Date.now() + Math.random();
+    const loadingExpense = {
+      id: tempId,
+      merchant: '',
+      amount: 0,
+      currency: 'USD',
+      date: new Date().toISOString().split('T')[0],
+      category: '',
+      description: '',
+      location: '',
+      receiptNumber: '',
+      paymentMethod: '',
+      taxAmount: 0,
+      imageUrl: null,
+      isLoading: true,
+      createdAt: new Date().toISOString()
+    };
+    
+    // Add placeholder to expenses list immediately
+    expenses.update(list => [loadingExpense, ...list]);
+    
+    // Navigate to expenses list
+    currentScreen.set('main');
+    currentTab.set('expenses');
+    stopCamera();
+    
+    // Process in background
     try {
       // Try server first, fall back to simulator
       let result;
@@ -187,99 +213,94 @@
       }
       
       if (result.success) {
-        // Store extracted data globally and navigate to expense form
-        window.tempExtractedData = result.data;
-        currentScreen.set("expense-form");
+        // Update the placeholder with real data
+        const processedExpense = {
+          id: tempId, // Keep same ID
+          ...result.data,
+          isLoading: false,
+          createdAt: new Date().toISOString()
+        };
+        
+        expenses.update(list => 
+          list.map(exp => exp.id === tempId ? processedExpense : exp)
+        );
+        
       } else {
-        alert("Failed to process receipt. Please try again.");
+        // Remove failed placeholder
+        expenses.update(list => list.filter(exp => exp.id !== tempId));
       }
     } catch (error) {
       console.error("OCR processing error:", error);
-      alert("An error occurred while processing the receipt.");
-    } finally {
-      loadingStates.update((state) => ({ ...state, ocr: false }));
-      stopCamera();
+      // Remove failed placeholder
+      expenses.update(list => list.filter(exp => exp.id !== tempId));
     }
   }
 
   async function processBatchFiles(files) {
     console.log('Starting batch processing for:', files.length, 'files');
-    loadingStates.update((state) => ({ ...state, ocr: true }));
-
-    try {
-      const results = [];
+    
+    // Create loading placeholders for all files
+    const placeholders = files.map((file, index) => ({
+      id: Date.now() + Math.random() + index,
+      merchant: '',
+      amount: 0,
+      currency: 'USD',
+      date: new Date().toISOString().split('T')[0],
+      category: '',
+      description: '',
+      location: '',
+      receiptNumber: '',
+      paymentMethod: '',
+      taxAmount: 0,
+      imageUrl: null,
+      isLoading: true,
+      createdAt: new Date().toISOString()
+    }));
+    
+    // Add all placeholders to expenses list immediately
+    expenses.update(list => [...placeholders, ...list]);
+    
+    // Navigate to expenses list
+    currentScreen.set('main');
+    currentTab.set('expenses');
+    
+    // Process each file in background
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const placeholder = placeholders[i];
       
-      // Process each file individually
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        console.log(`Processing file ${i + 1}/${files.length}:`, file.name);
-        
+      try {
+        // Try server first, fall back to simulator
+        let result;
         try {
-          // Try server first, fall back to simulator
-          let result;
-          try {
-            result = await sx.send("process_receipt", file);
-            console.log('Server result for', file.name, ':', result);
-          } catch (serverError) {
-            console.warn('Server processing failed for', file.name, ', using simulator:', serverError);
-            result = await processReceiptImage(file);
-          }
-          
-          if (result.success) {
-            results.push({
-              fileName: file.name,
-              success: true,
-              data: result.data,
-              confidence: result.confidence
-            });
-          } else {
-            results.push({
-              fileName: file.name,
-              success: false,
-              error: result.error || 'Processing failed'
-            });
-          }
-        } catch (error) {
-          console.error('Error processing', file.name, ':', error);
-          results.push({
-            fileName: file.name,
-            success: false,
-            error: error.message
-          });
+          result = await sx.send("process_receipt", file);
+          console.log('Server result for', file.name, ':', result);
+        } catch (serverError) {
+          console.warn('Server processing failed for', file.name, ', using simulator:', serverError);
+          result = await processReceiptImage(file);
         }
+        
+        if (result.success) {
+          // Update placeholder with real data
+          const processedExpense = {
+            id: placeholder.id, // Keep same ID
+            ...result.data,
+            isLoading: false,
+            createdAt: new Date().toISOString()
+          };
+          
+          expenses.update(list => 
+            list.map(exp => exp.id === placeholder.id ? processedExpense : exp)
+          );
+        } else {
+          // Remove failed placeholder
+          expenses.update(list => list.filter(exp => exp.id !== placeholder.id));
+        }
+      } catch (error) {
+        console.error('Error processing', file.name, ':', error);
+        // Remove failed placeholder
+        expenses.update(list => list.filter(exp => exp.id !== placeholder.id));
       }
-
-      const successfulResults = results.filter((r) => r.success);
-      console.log('Batch processing completed:', successfulResults.length, 'successful,', results.length - successfulResults.length, 'failed');
-
-      if (successfulResults.length > 0) {
-        // Add all successful extractions as expenses
-        const newExpenses = successfulResults.map((result) => ({
-          id: Date.now() + Math.random(),
-          ...result.data,
-          createdAt: new Date().toISOString(),
-        }));
-
-        expenses.update((list) => [...list, ...newExpenses]);
-
-        // Show success notification
-        notification.set({
-          type: 'success',
-          message: `Successfully processed ${successfulResults.length} of ${files.length} receipts`,
-          duration: 4000
-        });
-
-        // Navigate to expenses screen to see the results
-        currentScreen.set('main');
-        currentTab.set('expenses');
-      } else {
-        alert("Failed to process any receipts. Please try again.");
-      }
-    } catch (error) {
-      console.error("Batch processing error:", error);
-      alert("An error occurred while processing the receipts.");
-    } finally {
-      loadingStates.update((state) => ({ ...state, ocr: false }));
     }
   }
 </script>
