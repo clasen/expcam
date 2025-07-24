@@ -4,7 +4,6 @@ import { writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import hashFactory from 'hash-factory';
-import 'dotenv/config';
 
 const fileHash = hashFactory({ words: true, alpha: true, now: true });
 
