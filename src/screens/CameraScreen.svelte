@@ -2,17 +2,14 @@
   import { onMount } from "svelte";
   import {
     expenses,
-    loadingStates,
     currentScreen,
     currentTab,
     appSettings,
   } from "../stores/appStore.js";
   import {
     processReceiptImage,
-    processBatchImages,
   } from "../utils/ocrSimulator.js";
 
-  import LoadingSpinner from "../components/LoadingSpinner.svelte";
 
   import SxClient from "shotx/client";
   const sx = new SxClient();
@@ -321,16 +318,6 @@
 
   <!-- Content -->
   <main class="flex-1 overflow-hidden relative" class:h-screen={showCamera}>
-    {#if $loadingStates.ocr}
-      <div
-        class="absolute inset-0 bg-dark-900 bg-opacity-75 flex items-center justify-center z-10"
-      >
-        <div class="text-center">
-          <LoadingSpinner size="large" />
-          <p class="text-white mt-4">Processing receipt...</p>
-        </div>
-      </div>
-    {/if}
 
     {#if showCamera}
       <!-- Camera View -->
@@ -359,7 +346,7 @@
             class="absolute inset-0 bg-dark-900 bg-opacity-75 flex items-center justify-center"
           >
             <div class="text-center">
-              <LoadingSpinner size="large" />
+              <div class="w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
               <p class="text-white mt-4">Starting camera...</p>
             </div>
           </div>
