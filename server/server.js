@@ -5,6 +5,9 @@ import { writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
+import hashFactory from 'hash-factory';
+
+const fileHash = hashFactory({ words: true, alpha: true, now: true });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,17 +23,6 @@ const categories = [
 sxServer
     .onMessage('process_receipt', async (data) => {
         try {
-            // Generate unique filename
-            const timestamp = Date.now();
-            const filename = `receipt_${timestamp}.jpg`;
-            // Save to main project's public directory so it's accessible via Vite dev server
-            const filePath = join(__dirname, '..', 'public', 'receipts', filename);
-            const imageUrl = `/receipts/${filename}`;
-            
-            // Save image to public/receipts directory
-            writeFileSync(filePath, data);
-            console.log('Image saved to:', filePath);
-            
             // Process with ModelMix
             const mmix = ModelMix.new().sonnet4().addImageFromBuffer(data);
             const result = await mmix.json({
@@ -50,8 +42,19 @@ sxServer
                 },
                 confidence: 90,
             }, { data: { category: categories.join('|') }, currency: 'ISO 4217 currency code' }, { addExample: true });
-            
+
+            // Generate unique filename
+            const filename = fileHash(result.data.description) + '.jpg';
+            console.log('Filename:', filename);
+            // Save to main project's public directory so it's accessible via Vite dev server
+            const filePath = join(__dirname, '..', 'public', 'receipts', filename);
+            const imageUrl = `/receipts/${filename}`;
+
+            // Save image to public/receipts directory
+            writeFileSync(filePath, data);
+            console.log('Image saved to:', filePath);
             result.data.imageUrl = imageUrl;
+
             return result;
         } catch (error) {
             console.error('Error processing receipt:', error);
