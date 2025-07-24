@@ -202,15 +202,7 @@
       // Try server first, fall back to simulator
       let result;
       try {
-        // Convert file to buffer for server
-        const arrayBuffer = await file.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
-        
-        result = await sx.send("process_receipt", {
-          imageData: buffer,
-          fileName: file.name
-        });
-        console.log('Server result:', result);
+        result = await sx.send("process_receipt", file);
       } catch (serverError) {
         console.warn('Server processing failed, using simulator:', serverError);
         result = await processReceiptImage(file);
@@ -277,14 +269,7 @@
         // Try server first, fall back to simulator
         let result;
         try {
-          // Convert file to buffer for server
-          const arrayBuffer = await file.arrayBuffer();
-          const buffer = new Uint8Array(arrayBuffer);
-          
-          result = await sx.send("process_receipt", {
-            imageData: buffer,
-            fileName: file.name
-          });
+          result = await sx.send("process_receipt", file);
           console.log('Server result for', file.name, ':', result);
         } catch (serverError) {
           console.warn('Server processing failed for', file.name, ', using simulator:', serverError);
