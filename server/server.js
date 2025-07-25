@@ -13,7 +13,17 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default (server) => {
-    const sxServer = new SxServer({ server, opts: { maxHttpBufferSize: 10 * 1024 * 1024 } });
+    const opts = {
+        maxHttpBufferSize: 10 * 1024 * 1024,
+
+        cors: {
+            origin: "https://excam.tagnu.com",
+            methods: ["GET", "POST"],
+            credentials: true
+        }
+    }
+
+    const sxServer = new SxServer({ server, opts });
 
     const categories = [
         'lodging', 'transport', 'meals', 'miscellaneous', 'purchases', 'other'
@@ -89,13 +99,13 @@ export default (server) => {
                 // Process with ModelMix
                 let result = await processWithModelMix(jpgBuffer);
                 console.log(result);
-                
+
                 if (result.rotate > 0) {
                     console.log(`Rotating image by ${result.rotate} degrees and re-processing`);
-                    
+
                     // Rotate the vertical buffer by the specified amount
                     jpgBuffer = await sharp(jpgBuffer).rotate(result.rotate).toBuffer();
-                    
+
                     // Re-process with the rotated image
                     result = await processWithModelMix(jpgBuffer);
                 }
