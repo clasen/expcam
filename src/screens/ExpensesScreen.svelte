@@ -8,6 +8,7 @@
   
   let searchTerm = '';
   let selectedCategory = 'all';
+  let showIncompleteModal = false;
   
   $: filteredExpenses = $expenses.filter(expense => {
     const matchesSearch = expense.merchant.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -61,6 +62,29 @@
   }
   
   async function exportFinancialReport() {
+    // Check for incomplete expenses first
+    const incompleteExpenses = $expenses.filter(expense => {
+      const isLoading = expense.isLoading || false;
+      return !isLoading && (
+        !expense.merchant || 
+        !expense.amount || 
+        expense.amount === 0 ||
+        !expense.currency || 
+        expense.currency === '...' ||
+        !expense.date || 
+        !expense.category
+      );
+    });
+    
+    if (incompleteExpenses.length > 0) {
+      showIncompleteModal = true;
+      return;
+    }
+    
+    await performExport();
+  }
+  
+  async function performExport() {
     try {
       const zip = new JSZip();
       const timestamp = new Date().toISOString().split('T')[0];
@@ -287,3 +311,33 @@
     {/if}
   </main>
 </div>
+
+<!-- Incomplete Expenses Confirmation Modal -->
+{#if showIncompleteModal}
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-dark-800 rounded-xl p-6 max-w-sm w-full">
+      <div class="text-center">
+        <i class="fas fa-exclamation-triangle text-4xl text-yellow-500 mb-4"></i>
+        <h3 class="text-lg font-semibold text-white mb-2">Incomplete Expenses Found</h3>
+        <p class="text-dark-300 mb-6">
+          Some expenses are missing required information (merchant, amount, currency, date, or category). Do you want to export anyway?
+        </p>
+        
+        <div class="flex space-x-3">
+          <button
+            class="btn-secondary flex-1"
+            on:click={() => showIncompleteModal = false}
+          >
+            Cancel
+          </button>
+          <button
+            class="btn-primary flex-1"
+            on:click={() => { showIncompleteModal = false; performExport(); }}
+          >
+            Export Anyway
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+{/if}

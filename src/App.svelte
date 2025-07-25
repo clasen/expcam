@@ -144,11 +144,18 @@
 
         // Process in background
         try {
-            // Process image on client side before sending
-            const processedFile = await processImageFile(file);
+            // Try to process image on client side, fallback to original if it fails
+            let fileToSend;
+            try {
+                fileToSend = await processImageFile(file);
+                console.log("Image processed successfully");
+            } catch (processingError) {
+                console.warn("Image processing failed, using original file:", processingError);
+                fileToSend = file; // Use original file if processing fails
+            }
             
             // Try server first, fall back to simulator
-            const result = await sx.send("process_receipt", processedFile);
+            const result = await sx.send("process_receipt", fileToSend);
 
             if (result.success) {
                 // Update the placeholder with real data and validate currency
@@ -208,11 +215,18 @@
             const placeholder = placeholders[i];
 
             try {
-                // Process image on client side before sending
-                const processedFile = await processImageFile(file);
+                // Try to process image on client side, fallback to original if it fails
+                let fileToSend;
+                try {
+                    fileToSend = await processImageFile(file);
+                    console.log("Batch image processed successfully:", file.name);
+                } catch (processingError) {
+                    console.warn("Batch image processing failed for", file.name, ", using original file:", processingError);
+                    fileToSend = file; // Use original file if processing fails
+                }
                 
                 // Try server first, fall back to simulator
-                const result = await sx.send("process_receipt", processedFile);
+                const result = await sx.send("process_receipt", fileToSend);
                 console.log("Server result for", file.name, ":", result);
 
                 if (result.success) {

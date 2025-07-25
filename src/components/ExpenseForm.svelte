@@ -131,52 +131,38 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="space-y-6">
-  <!-- Receipt Image Thumbnail -->
-  {#if formData.imageUrl}
-    <div class="bg-dark-800 rounded-lg p-3">
-      <div class="flex items-center space-x-3">
-        <div class="flex-shrink-0">
-          <img 
-            src={formData.imageUrl} 
-            alt="Receipt thumbnail" 
-            class="w-12 h-12 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity border border-dark-600"
-            on:click={openImageModal}
-          />
-        </div>
-        <div class="flex-1 min-w-0">
-          <h3 class="text-sm font-medium text-dark-200 flex items-center">
-            <i class="fas fa-image mr-2 text-primary-500"></i>
-            Receipt Image
-          </h3>
-          <button
-            type="button"
-            class="text-xs text-dark-400 hover:text-primary-500 transition-colors mt-1"
-            on:click={openImageModal}
-          >
-            <i class="fas fa-search-plus mr-1"></i>
-            Click to view
-          </button>
-        </div>
-      </div>
-    </div>
-  {/if}
 
   <div class="space-y-4">
-    <!-- Merchant -->
-    <div>
-      <label class="block text-sm font-medium text-dark-200 mb-2">
-        Merchant <span class="text-error-500">*</span>
-      </label>
-      <input
-        type="text"
-        bind:value={formData.merchant}
-        placeholder="e.g., Hotel Marriott"
-        class="input-field"
-        class:border-error-500={errors.merchant}
-        on:input={handleInputChange}
-      >
-      {#if errors.merchant}
-        <p class="error-message">{errors.merchant}</p>
+    <!-- Merchant and Receipt Image -->
+    <div class="grid grid-cols-12 gap-4 items-start">
+      <div class="col-span-10">
+        <label class="block text-sm font-medium text-dark-200 mb-2">
+          Merchant <span class="text-error-500">*</span>
+        </label>
+        <input
+          type="text"
+          bind:value={formData.merchant}
+          placeholder="e.g., Hotel Marriott"
+          class="input-field"
+          class:border-error-500={errors.merchant}
+          on:input={handleInputChange}
+        >
+        {#if errors.merchant}
+          <p class="error-message">{errors.merchant}</p>
+        {/if}
+      </div>
+      
+      {#if formData.imageUrl}
+        <div class="col-span-2">
+          <div class="mt-7">
+            <img 
+              src={formData.imageUrl} 
+              alt="Receipt" 
+              class="w-full h-12 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity border border-dark-600"
+              on:click={openImageModal}
+            />
+          </div>
+        </div>
       {/if}
     </div>
     
@@ -341,17 +327,6 @@
         on:click|stopPropagation
       />
       
-      <!-- Download/Open button -->
-      <div class="absolute -bottom-12 left-0 right-0 flex justify-center space-x-4">
-        <button
-          type="button"
-          class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors text-sm"
-          on:click={() => window.open(formData.imageUrl, '_blank')}
-        >
-          <i class="fas fa-external-link-alt mr-2"></i>
-          Open in new tab
-        </button>
-      </div>
     </div>
   </div>
 {/if}

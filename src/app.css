@@ -40,6 +40,11 @@
     @apply bg-gray-200 hover:bg-gray-300 text-gray-900;
   }
   
+  /* Delete/error buttons in light mode - red border style */
+  html.light .bg-error-600 {
+    @apply bg-white text-red-600 border-2 border-red-600 hover:bg-red-50 !important;
+  }
+  
   .btn-accent {
     @apply bg-accent-600 hover:bg-accent-700 text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 active:scale-95 touch-manipulation;
   }
@@ -62,8 +67,22 @@
   
   html.light input[type="date"],
   html.light input[type="time"] {
-    @apply bg-gray-200 border-gray-300 text-gray-900 !important;
+    @apply bg-white border-gray-300 text-gray-900 !important;
     color-scheme: light;
+  }
+  
+  /* Select dropdown styling for light mode */
+  html.light select,
+  html.light .input-field select {
+    @apply bg-white border-gray-300 text-gray-900 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e") !important;
+    background-position: right 0.5rem center !important;
+    background-repeat: no-repeat !important;
+    background-size: 1.5em 1.5em !important;
+    padding-right: 2.5rem !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
   }
   
   input[type="date"]::-webkit-calendar-picker-indicator,
@@ -120,7 +139,13 @@
   }
   
   html.light .card {
-    @apply bg-gray-50 border-gray-300 shadow-md;
+    @apply bg-white border-gray-200 shadow-sm;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  html.light .card:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 0.2s ease-in-out;
   }
   
   .nav-tab {
@@ -136,17 +161,32 @@
   }
   
   html.light .nav-tab:not(.active) {
-    @apply text-gray-400 hover:text-gray-200;
+    @apply text-gray-500 hover:text-gray-700;
   }
   
   /* Better active state indication in light mode */
   html.light .nav-tab.active {
-    @apply text-accent-400 bg-gray-700 rounded-lg;
+    @apply text-primary-600 bg-primary-50 rounded-lg;
+  }
+  
+  
+  /* Header button styling for light mode */
+  html.light header button {
+    @apply text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200;
+    border-radius: 0.5rem;
+  }
+  
+  
+  /* Header specific styling for light mode - elegant and modern */
+  html.light header.bg-dark-800 {
+    @apply bg-white !important;
+    border-bottom: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
   
   /* Theme overrides for light mode */
   html.light .bg-dark-800 {
-    @apply bg-gray-200 !important;
+    @apply bg-gray-50 !important;
   }
   
   html.light .bg-dark-900 {
@@ -157,9 +197,11 @@
     @apply bg-gray-200 !important;
   }
   
-  /* Navigation bar specific styling for light mode */
+  /* Navigation bar specific styling for light mode - lighter and more elegant */
   html.light nav.bg-dark-800 {
-    @apply bg-gray-800 !important;
+    @apply bg-white !important;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1), 0 -2px 4px -1px rgba(0, 0, 0, 0.06);
   }
   
   html.light .text-white {
@@ -202,6 +244,51 @@
   html.light .text-success-500 i,
   html.light .text-yellow-400 i {
     color: inherit !important;
+  }
+  
+  /* Exception for header and navigation icons - they should be dark */
+  html.light header .fas,
+  html.light header .far,
+  html.light header .fab,
+  html.light header .fal,
+  html.light header i[class*="fa-"],
+  html.light nav .fas,
+  html.light nav .far,
+  html.light nav .fab,
+  html.light nav .fal,
+  html.light nav i[class*="fa-"] {
+    color: inherit !important;
+  }
+  
+  /* Exception for settings section icons only - they should be visible */
+  html.light main section .fas,
+  html.light main section .far,
+  html.light main section .fab,
+  html.light main section .fal,
+  html.light main section i[class*="fa-"],
+  html.light section.card .fas,
+  html.light section.card .far,
+  html.light section.card .fab,
+  html.light section.card .fal,
+  html.light section.card i[class*="fa-"] {
+    color: #6b7280 !important;
+  }
+  
+  /* Exception for SearchableSelect dropdown arrows - they should be dark */
+  html.light .input-field .fa-chevron-down,
+  html.light button .fa-chevron-down {
+    color: #6b7280 !important;
+  }
+  
+  /* SearchableSelect button styling for light mode - very specific */
+  html.light button.input-field,
+  html.light .relative button.input-field,
+  html.light div.relative button.input-field,
+  html.light div button.input-field.text-left {
+    @apply bg-white border-gray-300 text-gray-900 !important;
+    border: 1px solid #d1d5db !important;
+    background-color: white !important;
+    color: #111827 !important;
   }
   
   .loading-spinner {
