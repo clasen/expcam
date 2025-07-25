@@ -280,6 +280,14 @@
     color: #6b7280 !important;
   }
   
+  /* Exception for expense card menu dots - they should be dark */
+  html.light .fa-ellipsis-v,
+  html.light .fa-ellipsis-h,
+  html.light button .fa-ellipsis-v,
+  html.light button .fa-ellipsis-h {
+    color: #6b7280 !important;
+  }
+  
   /* SearchableSelect button styling for light mode - very specific */
   html.light button.input-field,
   html.light .relative button.input-field,
