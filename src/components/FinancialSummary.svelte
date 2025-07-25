@@ -40,7 +40,7 @@
       'Travel ID', 'From Date', 'To Date', 'Travel Days', 'Lodging Type', 
       'Accounting Code', 'Expense Type', 'Approving Manager',
       // Expense Information  
-      'Expense ID', 'Date', 'Merchant', 'Amount', 'Currency', 'Category', 
+      'Expense ID', 'Date', 'Hour', 'Merchant', 'Amount', 'Currency', 'Category', 
       'Description', 'Location', 'Receipt Number', 'Payment Method', 
       'Created At', 'Updated At'
     ];
@@ -58,6 +58,7 @@
       // Expense Information
       expense.id || '',
       expense.date || '',
+      expense.hour || '',
       expense.merchant || '',
       expense.amount || 0,
       expense.currency || '',

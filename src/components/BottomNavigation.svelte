@@ -8,8 +8,9 @@
   ];
   
   function switchTab(tabId) {
-    // If camera tab is clicked, trigger file picker without changing screens
+    // If camera tab is clicked, trigger file picker and navigate to expenses
     if (tabId === 'camera') {
+      currentTab.set('expenses');
       triggerFileUpload();
     } else {
       currentTab.set(tabId);

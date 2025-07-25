@@ -66,8 +66,6 @@ export const financialSummary = writable({
 export const appSettings = writable({
   darkMode: true,
   currency: 'USD',
-  autoSave: true,
-  notifications: true,
 });
 
 // Loading States

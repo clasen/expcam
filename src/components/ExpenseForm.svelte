@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { expenses, expenseCategories, currencies, editingExpense } from '../stores/appStore.js';
+  import { expenses, expenseCategories, currencies, editingExpense, appSettings } from '../stores/appStore.js';
   import { validateFormData } from '../utils/validation.js';
   import SearchableSelect from './SearchableSelect.svelte';
   
@@ -18,6 +18,7 @@
     amount: '',
     currency: '...',
     date: new Date().toISOString().split('T')[0],
+    hour: '',
     category: '',
     description: '',
     location: '',
@@ -37,6 +38,7 @@
       amount: data.amount || '',
       currency: data.currency || '...',
       date: data.date || new Date().toISOString().split('T')[0],
+      hour: data.hour || '',
       category: data.category || '',
       description: data.description || '',
       location: data.location || '',
@@ -44,6 +46,31 @@
       paymentMethod: data.paymentMethod || 'Credit Card',
       imageUrl: data.imageUrl || null
     };
+  }
+  
+  // Auto-save function triggered on input change
+  function handleInputChange() {
+    if (!isEditing) return;
+    
+    // Validate required fields only
+    const requiredErrors = validateFormData(formData, validationRules) || {};
+    const hasRequiredFields = !requiredErrors.merchant && !requiredErrors.amount && 
+                             !requiredErrors.currency && !requiredErrors.date && 
+                             !requiredErrors.category;
+    
+    if (hasRequiredFields) {
+      const updatedExpense = {
+        ...$editingExpense,
+        ...formData,
+        amount: parseFloat(formData.amount) || 0,
+        imageUrl: formData.imageUrl,
+        updatedAt: new Date().toISOString()
+      };
+      
+      expenses.update(list => 
+        list.map(exp => exp.id === $editingExpense.id ? updatedExpense : exp)
+      );
+    }
   }
   
   
@@ -146,6 +173,7 @@
         placeholder="e.g., Hotel Marriott"
         class="input-field"
         class:border-error-500={errors.merchant}
+        on:input={handleInputChange}
       >
       {#if errors.merchant}
         <p class="error-message">{errors.merchant}</p>
@@ -165,6 +193,7 @@
           placeholder="0.00"
           class="input-field"
           class:border-error-500={errors.amount}
+          on:input={handleInputChange}
         >
         {#if errors.amount}
           <p class="error-message">{errors.amount}</p>
@@ -178,23 +207,39 @@
         displayKey="code"
         valueKey="code"
         error={errors.currency}
+        on:change={handleInputChange}
       />
     </div>
     
-    <!-- Date -->
-    <div>
-      <label class="block text-sm font-medium text-dark-200 mb-2">
-        Date <span class="text-error-500">*</span>
-      </label>
-      <input
-        type="date"
-        bind:value={formData.date}
-        class="input-field"
-        class:border-error-500={errors.date}
-      >
-      {#if errors.date}
-        <p class="error-message">{errors.date}</p>
-      {/if}
+    <!-- Date and Hour -->
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-dark-200 mb-2">
+          Date <span class="text-error-500">*</span>
+        </label>
+        <input
+          type="date"
+          bind:value={formData.date}
+          class="input-field"
+          class:border-error-500={errors.date}
+          on:change={handleInputChange}
+        >
+        {#if errors.date}
+          <p class="error-message">{errors.date}</p>
+        {/if}
+      </div>
+      
+      <div>
+        <label class="block text-sm font-medium text-dark-200 mb-2">
+          Hour
+        </label>
+        <input
+          type="time"
+          bind:value={formData.hour}
+          class="input-field"
+          on:change={handleInputChange}
+        >
+      </div>
     </div>
     
     <!-- Category -->
@@ -206,6 +251,7 @@
       displayKey="name"
       valueKey="id"
       error={errors.category}
+      on:change={handleInputChange}
     />
     
     <!-- Description -->
@@ -218,6 +264,7 @@
         placeholder="Additional details..."
         rows="3"
         class="input-field resize-none"
+        on:input={handleInputChange}
       ></textarea>
     </div>
     
@@ -231,6 +278,7 @@
         bind:value={formData.location}
         placeholder="e.g., New York, NY"
         class="input-field"
+        on:input={handleInputChange}
       >
     </div>
     
@@ -244,6 +292,7 @@
         bind:value={formData.receiptNumber}
         placeholder="Receipt #"
         class="input-field"
+        on:input={handleInputChange}
       >
     </div>
     
@@ -255,6 +304,7 @@
       <select
         bind:value={formData.paymentMethod}
         class="input-field"
+        on:change={handleInputChange}
       >
         <option value="Credit Card">Credit Card</option>
         <option value="Debit Card">Debit Card</option>
@@ -265,22 +315,6 @@
     </div>
   </div>
   
-  <!-- Actions -->
-  <div class="flex space-x-3 pt-2">
-    <button
-      type="button"
-      class="btn-secondary flex-1"
-      on:click={handleCancel}
-    >
-      Cancel
-    </button>
-    <button
-      type="submit"
-      class="btn-primary flex-1"
-    >
-      {isEditing ? 'Update' : 'Save'}
-    </button>
-  </div>
 </form>
 
 <!-- Image Modal -->

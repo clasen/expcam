@@ -6,6 +6,7 @@
         expenses,
         tripData,
         currencies,
+        appSettings,
     } from "./stores/appStore.js";
     import { loadStoredData } from "./utils/storage.js";
     import SxClient from "shotx/client";
@@ -127,6 +128,7 @@
             amount: 0,
             currency: "...",
             date: new Date().toISOString().split("T")[0],
+            hour: "",
             category: "",
             description: "",
             location: "",
@@ -186,6 +188,7 @@
             amount: 0,
             currency: "...",
             date: new Date().toISOString().split("T")[0],
+            hour: "",
             category: "",
             description: "",
             location: "",
@@ -248,9 +251,24 @@
     $: showTripData = $currentScreen === "trip-data";
     $: showFinancialSummary = $currentScreen === "financial-summary";
     $: showExpenseForm = $currentScreen === "expense-form";
+    
+    // Apply theme based on settings
+    $: if (typeof document !== 'undefined') {
+        if ($appSettings.darkMode) {
+            document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
+        } else {
+            document.documentElement.classList.add('light');
+            document.documentElement.classList.remove('dark');
+        }
+    }
 </script>
 
-<div class="app min-h-screen bg-dark-900 text-white flex flex-col">
+<div class="app min-h-screen flex flex-col transition-colors duration-200" 
+     class:bg-dark-900={$appSettings.darkMode} 
+     class:text-white={$appSettings.darkMode}
+     class:bg-gray-100={!$appSettings.darkMode}
+     class:text-gray-900={!$appSettings.darkMode}>
     {#if isLoading}
         <div class="flex-1 flex items-center justify-center">
             <LoadingSpinner size="large" />
