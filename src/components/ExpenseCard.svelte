@@ -3,6 +3,7 @@
   import { expenseCategories } from '../stores/appStore.js';
   
   export let expense;
+  export let isSelected = false;
   
   const dispatch = createEventDispatcher();
   
@@ -20,31 +21,20 @@
     !expense.category
   );
   
-  let showMenu = false;
-  
   function editExpense() {
-    showMenu = false;
     dispatch('edit', expense);
   }
   
-  function deleteExpense() {
-    showMenu = false;
-    dispatch('delete', expense.id);
-  }
-  
-  function toggleMenu(event) {
+  function handleCheckboxChange(event) {
     event.stopPropagation();
-    showMenu = !showMenu;
+    event.preventDefault();
+    dispatch('select', { expense, selected: event.target.checked });
   }
   
   function handleCardClick() {
     if (!isLoading) {
       editExpense();
     }
-  }
-  
-  function closeMenu() {
-    showMenu = false;
   }
   
   function formatCurrency(amount, currency = 'USD') {
@@ -102,45 +92,18 @@
       </div>
       
       {#if !isLoading}
-        <div class="relative">
-          <button
-            class="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-full transition-colors"
-            on:click={toggleMenu}
-            aria-label="More options"
-          >
-            <i class="fas fa-ellipsis-v text-sm"></i>
-          </button>
-          
-          {#if showMenu}
-            <div 
-              class="absolute right-0 top-full mt-1 bg-dark-700 rounded-lg shadow-lg border border-dark-600 py-1 z-10 min-w-32"
-              on:click|stopPropagation
-            >
-              <button
-                class="w-full px-4 py-2 text-left text-sm text-white hover:bg-dark-600 transition-colors flex items-center"
-                on:click={editExpense}
-              >
-                <i class="fas fa-edit mr-3 text-primary-500"></i>
-                Edit
-              </button>
-              <button
-                class="w-full px-4 py-2 text-left text-sm text-white hover:bg-dark-600 transition-colors flex items-center"
-                on:click={deleteExpense}
-              >
-                <i class="fas fa-trash mr-3 text-error-500"></i>
-                Delete
-              </button>
-            </div>
-          {/if}
+        <div class="flex items-center" on:click|stopPropagation>
+          <input
+            type="checkbox"
+            checked={isSelected}
+            on:change={handleCheckboxChange}
+            on:click|stopPropagation
+            class="w-5 h-5 text-primary-600 bg-transparent border-2 border-gray-400 rounded focus:ring-primary-500 focus:ring-2 cursor-pointer"
+            aria-label="Select expense"
+          />
         </div>
       {/if}
     </div>
   </div>
 </div>
 
-{#if showMenu}
-  <div 
-    class="fixed inset-0 z-0" 
-    on:click={closeMenu}
-  ></div>
-{/if}

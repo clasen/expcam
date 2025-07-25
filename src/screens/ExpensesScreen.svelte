@@ -9,6 +9,9 @@
   let searchTerm = '';
   let selectedCategory = 'all';
   let showIncompleteModal = false;
+  let selectedExpenses = new Set();
+  
+  $: hasSelectedExpenses = selectedExpenses.size > 0;
   
   $: filteredExpenses = $expenses.filter(expense => {
     const matchesSearch = expense.merchant.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,6 +58,23 @@
   function handleDeleteExpense(event) {
     const expenseId = event.detail;
     expenses.update(list => list.filter(exp => exp.id !== expenseId));
+  }
+  
+  function handleExpenseSelect(event) {
+    const { expense, selected } = event.detail;
+    if (selected) {
+      selectedExpenses.add(expense.id);
+    } else {
+      selectedExpenses.delete(expense.id);
+    }
+    selectedExpenses = selectedExpenses;
+  }
+  
+  function deleteSelectedExpenses() {
+    const selectedIds = Array.from(selectedExpenses);
+    expenses.update(list => list.filter(exp => !selectedIds.includes(exp.id)));
+    selectedExpenses.clear();
+    selectedExpenses = selectedExpenses;
   }
   
   function openTripModal() {
@@ -304,12 +324,35 @@
       {#each filteredExpenses as expense (expense.id)}
         <ExpenseCard 
           {expense}
+          isSelected={selectedExpenses.has(expense.id)}
           on:edit={handleEditExpense}
           on:delete={handleDeleteExpense}
+          on:select={handleExpenseSelect}
         />
       {/each}
     {/if}
   </main>
+  
+  <!-- Delete button when expenses are selected -->
+  {#if hasSelectedExpenses}
+    <div class="fixed bottom-24 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-md">
+      <div class="bg-dark-800 border border-dark-700 rounded-xl p-4 shadow-lg">
+        <div class="flex items-center justify-between">
+          <div class="text-white">
+            <span class="font-medium">{selectedExpenses.size}</span>
+            <span class="text-dark-300 ml-1">selected</span>
+          </div>
+          <button
+            class="bg-error-600 hover:bg-error-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 active:scale-95"
+            on:click={deleteSelectedExpenses}
+          >
+            <i class="fas fa-trash mr-2"></i>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  {/if}
 </div>
 
 <!-- Incomplete Expenses Confirmation Modal -->
