@@ -23,7 +23,7 @@ export default (server) => {
         }
     }
 
-    const sxServer = new SxServer(server, opts);
+    const sxServer = new SxServer(server, opts, { auto404: false });
 
     const categories = [
         'lodging', 'transport', 'meals', 'miscellaneous', 'purchases', 'other'
