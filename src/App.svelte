@@ -4,93 +4,30 @@
         currentTab,
         currentScreen,
         expenses,
-        tripData,
         currencies,
         appSettings,
     } from "./stores/appStore.js";
     import { loadStoredData } from "./utils/storage.js";
     import SxClient from "shotx/client";
 
-    const sx = new SxClient({ url: "https://excam-server.tagnu.com" });
-    sx.connect();
-
-    // Function to validate and normalize currency
-    function validateCurrency(currency) {
-        if (!currency) return "...";
-
-        // Get current supported currencies
-        let supportedCurrencies = [];
-        currencies.subscribe((currencyList) => {
-            supportedCurrencies = currencyList.map((c) => c.code);
-        })();
-
-        // If currency is supported, return it; otherwise return '...'
-        return supportedCurrencies.includes(currency) ? currency : "...";
-    }
-
-    // Function to process image on client side (compress and convert to JPG)
-    async function processImageFile(file) {
-        return new Promise((resolve, reject) => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-
-            img.onload = function() {
-                // Calculate new dimensions (max 2560px on longest side)
-                const maxSize = 2560;
-                let { width, height } = img;
-                
-                if (width > height) {
-                    if (width > maxSize) {
-                        height = (height * maxSize) / width;
-                        width = maxSize;
-                    }
-                } else {
-                    if (height > maxSize) {
-                        width = (width * maxSize) / height;
-                        height = maxSize;
-                    }
-                }
-
-                // Set canvas dimensions
-                canvas.width = width;
-                canvas.height = height;
-
-                // Draw and compress
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // Convert to blob with compression
-                canvas.toBlob((blob) => {
-                    if (blob) {
-                        // Create a new File object with JPG extension
-                        const processedFile = new File([blob], 
-                            file.name.replace(/\.[^/.]+$/, '.jpg'), 
-                            { type: 'image/jpeg' }
-                        );
-                        resolve(processedFile);
-                    } else {
-                        reject(new Error('Failed to process image'));
-                    }
-                }, 'image/jpeg', 0.8); // 80% quality
-            };
-
-            img.onerror = () => reject(new Error('Failed to load image'));
-            img.src = URL.createObjectURL(file);
-        });
-    }
-
-    import ExpensesScreen from "./screens/ExpensesScreen.svelte";
-    import CameraScreen from "./screens/CameraScreen.svelte";
-    import SettingsScreen from "./screens/SettingsScreen.svelte";
-    import TripDataScreen from "./screens/TripDataScreen.svelte";
-    import FinancialSummaryScreen from "./screens/FinancialSummaryScreen.svelte";
-    import ExpenseFormScreen from "./screens/ExpenseFormScreen.svelte";
-    import BottomNavigation from "./components/BottomNavigation.svelte";
-    import LoadingSpinner from "./components/LoadingSpinner.svelte";
-
-    let isLoading = true;
+    let apiUrl = "https://api.excam.tagnu.com"; // fallback
+    let sx = null;
 
     onMount(async () => {
+        // Cargar configuración del servidor
+        try {
+            const response = await fetch('/api/config');
+            const config = await response.json();
+            apiUrl = config.domainApi;
+            console.log('API URL loaded:', apiUrl);
+        } catch (error) {
+            console.warn('Failed to load config, using fallback:', error);
+        }
+
+        // Inicializar SxClient con la URL correcta
+        sx = new SxClient({ url: apiUrl });
+        sx.connect();
+
         // Load stored data on app start
         await loadStoredData();
         isLoading = false;
@@ -259,6 +196,82 @@
             }
         }
     }
+
+    // Function to validate and normalize currency
+    function validateCurrency(currency) {
+        if (!currency) return "...";
+
+        // Get current supported currencies
+        let supportedCurrencies = [];
+        currencies.subscribe((currencyList) => {
+            supportedCurrencies = currencyList.map((c) => c.code);
+        })();
+
+        // If currency is supported, return it; otherwise return '...'
+        return supportedCurrencies.includes(currency) ? currency : "...";
+    }
+
+    // Function to process image on client side (compress and convert to JPG)
+    async function processImageFile(file) {
+        return new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+
+            img.onload = function() {
+                // Calculate new dimensions (max 2560px on longest side)
+                const maxSize = 2560;
+                let { width, height } = img;
+                
+                if (width > height) {
+                    if (width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                }
+
+                // Set canvas dimensions
+                canvas.width = width;
+                canvas.height = height;
+
+                // Draw and compress
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                // Convert to blob with compression
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        // Create a new File object with JPG extension
+                        const processedFile = new File([blob], 
+                            file.name.replace(/\.[^/.]+$/, '.jpg'), 
+                            { type: 'image/jpeg' }
+                        );
+                        resolve(processedFile);
+                    } else {
+                        reject(new Error('Failed to process image'));
+                    }
+                }, 'image/jpeg', 0.8); // 80% quality
+            };
+
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    import ExpensesScreen from "./screens/ExpensesScreen.svelte";
+    import CameraScreen from "./screens/CameraScreen.svelte";
+    import SettingsScreen from "./screens/SettingsScreen.svelte";
+    import TripDataScreen from "./screens/TripDataScreen.svelte";
+    import FinancialSummaryScreen from "./screens/FinancialSummaryScreen.svelte";
+    import ExpenseFormScreen from "./screens/ExpenseFormScreen.svelte";
+    import BottomNavigation from "./components/BottomNavigation.svelte";
+    import LoadingSpinner from "./components/LoadingSpinner.svelte";
+
+    let isLoading = true;
 
     // Determine which screen to show
     $: showMainScreens = $currentScreen === "main";

@@ -19,6 +19,13 @@ app.use(express.static(path.join(__dirname, 'dist'), {
     lastModified: true
 }));
 
+// Endpoint para obtener configuración del cliente
+app.get('/api/config', (req, res) => {
+    res.json({
+        domainApi: process.env.DOMAIN_API
+    });
+});
+
 // // Middleware para manejar errores 404 en archivos estáticos
 // app.use((err, req, res, next) => {
 //     if (err.status === 404) {
@@ -37,13 +44,13 @@ app.use(express.static(path.join(__dirname, 'dist'), {
 //     });
 // });
 
-const roster = new Roster({ email: 'mclasen@blyts.com' });
+const roster = new Roster({ email: process.env.DOMAIN_EMAIL });
 
-roster.register('excam.tagnu.com', (httpsServer) => {
+roster.register(process.env.DOMAIN, (httpsServer) => {
     return app;
 });
 
-roster.register('excam-server.tagnu.com', (httpsServer) => {
+roster.register(process.env.DOMAIN_API, (httpsServer) => {
     import('./server/server.js').then((module) => {
         return module.default(httpsServer);
     });
