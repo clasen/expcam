@@ -242,7 +242,8 @@
   html.light .text-accent-500 i,
   html.light .text-error-500 i,
   html.light .text-success-500 i,
-  html.light .text-yellow-400 i {
+  html.light .text-yellow-400 i,
+  html.light .text-yellow-500 i {
     color: inherit !important;
   }
   

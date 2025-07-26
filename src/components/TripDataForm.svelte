@@ -1,6 +1,6 @@
 <script>
   import { createEventDispatcher } from 'svelte';
-  import { tripData, lodgingTypes, accountingCodes } from '../stores/appStore.js';
+  import { tripData, accountingCodes } from '../stores/appStore.js';
   import { validateFormData, validateDateRange } from '../utils/validation.js';
   import SearchableSelect from './SearchableSelect.svelte';
   
@@ -19,7 +19,6 @@
     }},
     fromDate: { required: true, label: 'From Date', type: 'date' },
     toDate: { required: true, label: 'To Date', type: 'date' },
-    lodgingType: { required: true, label: 'Lodging Type' },
     accountingCode: { required: true, label: 'Accounting Code' }
   };
   
@@ -120,15 +119,6 @@
       >
     </div>
     
-    <!-- Lodging Type -->
-    <SearchableSelect
-      label="Lodging Type *"
-      options={$lodgingTypes}
-      bind:value={formData.lodgingType}
-      placeholder="Select lodging type..."
-      error={errors.lodgingType}
-    />
-    
     <!-- Accounting Code -->
     <SearchableSelect
       label="Accounting Code *"
@@ -139,19 +129,6 @@
       valueKey="code"
       error={errors.accountingCode}
     />
-    
-    <!-- Expense Type -->
-    <div>
-      <label class="block text-sm font-medium text-dark-200 mb-2">
-        Expense Type
-      </label>
-      <input
-        type="text"
-        bind:value={formData.expenseType}
-        placeholder="e.g., Board Meeting Expense"
-        class="input-field"
-      >
-    </div>
     
     <!-- Approving Manager -->
     <div>

@@ -138,8 +138,8 @@
     // Headers include both expense and trip information
     const headers = [
       // Trip Information
-      'Travel ID', 'From Date', 'To Date', 'Travel Days', 'Lodging Type', 
-      'Accounting Code', 'Expense Type', 'Approving Manager',
+      'Travel ID', 'From Date', 'To Date', 'Travel Days', 
+      'Accounting Code', 'Approving Manager',
       // Expense Information  
       'Expense ID', 'Date', 'Hour', 'Merchant', 'Amount', 'Currency', 'Category', 
       'Description', 'Location', 'Receipt Number', 'Payment Method', 
@@ -152,9 +152,7 @@
       $tripData.fromDate || '',
       $tripData.toDate || '',
       $tripData.travelDays || '',
-      $tripData.lodgingType || '',
       $tripData.accountingCode || '',
-      $tripData.expenseType || '',
       $tripData.approvingManager || '',
       // Expense Information
       expense.id || '',

@@ -19,23 +19,23 @@ app.use(express.static(path.join(__dirname, 'dist'), {
     lastModified: true
 }));
 
-// Middleware para manejar errores 404 en archivos estáticos
-app.use((err, req, res, next) => {
-    if (err.status === 404) {
-        res.status(404).send('404 - Not Found');
-    } else {
-        next(err);
-    }
-});
+// // Middleware para manejar errores 404 en archivos estáticos
+// app.use((err, req, res, next) => {
+//     if (err.status === 404) {
+//         res.status(404).send('404 - Not Found');
+//     } else {
+//         next(err);
+//     }
+// });
 
-// Capturar rutas que solo contengan letras, números, guiones y slashes
-app.get(/^[\/\w-]+$/, (req, res) => {
-    res.sendFile(path.join(__dirname, 'dist', 'index.html'), err => {
-        if (err) {
-            res.status(500).send('500 - Internal Server Error');
-        }
-    });
-});
+// // Capturar rutas que solo contengan letras, números, guiones y slashes
+// app.get(/^[\/\w-]+$/, (req, res) => {
+//     res.sendFile(path.join(__dirname, 'dist', 'index.html'), err => {
+//         if (err) {
+//             res.status(500).send('500 - Internal Server Error');
+//         }
+//     });
+// });
 
 const roster = new Roster({ email: 'mclasen@blyts.com' });
 

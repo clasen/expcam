@@ -148,9 +148,9 @@
             let fileToSend;
             try {
                 fileToSend = await processImageFile(file);
-                console.log("Image processed successfully");
+                // console.log("Image processed successfully");
             } catch (processingError) {
-                console.warn("Image processing failed, using original file:", processingError);
+                // console.warn("Image processing failed, using original file:", processingError);
                 fileToSend = file; // Use original file if processing fails
             }
             
@@ -186,7 +186,7 @@
     }
 
     async function processBatchFiles(files) {
-        console.log("Starting batch processing for:", files.length, "files");
+        // console.log("Starting batch processing for:", files.length, "files");
 
         // Create loading placeholders for all files
         const placeholders = files.map((file, index) => ({

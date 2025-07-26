@@ -11,10 +11,8 @@ export const tripData = writable({
   fromDate: '',
   toDate: '',
   travelDays: 0,
-  lodgingType: '',
   accountingCode: '',
-  expenseType: 'Board Meeting Expense',
-  approvingManager: 'Sebastián Clasen – Deputy General Manager'
+  approvingManager: ''
 });
 
 // Expenses
@@ -38,14 +36,6 @@ export const currencies = writable([
   { code: 'GBP', name: 'British Pound', symbol: '£', rate: 0.75 },
   { code: 'JPY', name: 'Japanese Yen', symbol: '¥', rate: 110.0 },
   { code: 'ARS', name: 'Argentine Peso', symbol: '$', rate: 350.0 }
-]);
-
-// Lodging Types
-export const lodgingTypes = writable([
-  { id: 'hotel', name: 'Hotel' },
-  { id: 'homestay', name: 'Homestay' },
-  { id: 'apartment', name: 'Apartment' },
-  { id: 'other', name: 'Other' }
 ]);
 
 // Accounting Codes
