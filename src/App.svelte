@@ -25,7 +25,7 @@
         }
 
         // Inicializar SxClient con la URL correcta
-        sx = new SxClient({ url: apiUrl });
+        sx = new SxClient(apiUrl);
         sx.connect();
 
         // Load stored data on app start

@@ -17,13 +17,13 @@ export default (server) => {
         maxHttpBufferSize: 10 * 1024 * 1024,
 
         cors: {
-            origin: "https://excam.tagnu.com",
+            origin: "https://" + process.env.DOMAIN,
             methods: ["GET", "POST"],
             credentials: true
         }
     }
 
-    const sxServer = new SxServer({ server, opts });
+    const sxServer = new SxServer(server, opts);
 
     const categories = [
         'lodging', 'transport', 'meals', 'miscellaneous', 'purchases', 'other'
