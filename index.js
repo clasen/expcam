@@ -58,7 +58,7 @@ roster.register(process.env.DOMAIN_API, (httpsServer) => {
 
 roster.register(process.env.DOMAIN + ":8080", (httpsServer) => {
     return (req, res) => {
-        res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+        res.end("ok");
     }
 });
 
